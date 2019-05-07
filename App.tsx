@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Text, Button } from 'react-native';
+import Animated from 'react-native-reanimated';
 import Stack from './components/Stack';
 import Card from './components/Card';
 
@@ -20,19 +21,22 @@ export default class App extends React.Component<{}, State> {
     route,
     layout,
     animated,
-    focused
+    position,
+    next,
   }: {
     route: Route;
     layout: Layout;
     animated: boolean;
-    focused: boolean
+    position: Animated.Value<number>
+    next?: Animated.Value<number>
   }) => {
     return (
       <Card
         key={route.key}
         layout={layout}
         animated={animated}
-        focused={focused}
+        position={position}
+        next={next}
         onRemove={() =>
           this.setState(state => ({
             routes: state.routes.filter(r => r !== route),

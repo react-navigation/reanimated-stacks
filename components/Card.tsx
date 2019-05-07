@@ -7,6 +7,8 @@ import {
 } from 'react-native-gesture-handler';
 
 type Props = {
+  next?: Animated.Value<number>;
+  position: Animated.Value<number>;
   layout: { width: number };
   animated: boolean;
   onRemove: () => void;
@@ -85,7 +87,7 @@ export default class Card extends React.Component<Props> {
 
     if (width !== prevProps.layout.width) {
       this.layoutWidth.setValue(width);
-      this.position.setValue(width);
+      this.props.position.setValue(width);
     }
 
     if (animated !== prevProps.animated) {
@@ -100,7 +102,6 @@ export default class Card extends React.Component<Props> {
   private nextIsVisible = new Value<Binary | -1>(UNSET);
 
   private clock = new Clock();
-  private position = new Value(this.props.layout.width);
   private layoutWidth = new Value(this.props.layout.width);
 
   private gestureX = new Value(0);
@@ -116,7 +117,7 @@ export default class Card extends React.Component<Props> {
     const frameTime = new Value(0);
 
     const state = {
-      position: this.position,
+      position: this.props.position,
       time: new Value(0),
       finished: new Value(FALSE),
     };
@@ -180,10 +181,10 @@ export default class Card extends React.Component<Props> {
           set(this.isSwiping, TRUE),
           set(this.isSwipeGesture, TRUE),
           // Also update the drag offset to the last position
-          set(this.offsetX, this.position),
+          set(this.offsetX, this.props.position),
         ]),
-        // Update position with previous offset + gesture distance
-        set(this.position, max(add(this.offsetX, this.gestureX), 0)),
+        // Update position with next offset + gesture distance
+        set(this.props.position, max(add(this.offsetX, this.gestureX), 0)),
         // Stop animations while we're dragging
         stopClock(this.clock),
       ],
@@ -221,11 +222,11 @@ export default class Card extends React.Component<Props> {
               this.isVisible
             )
           ),
-          set(this.position, 0)
+          set(this.props.position, 0)
         ),
       ]
     ),
-    this.position,
+    this.props.position,
   ]);
 
   private handleGestureEvent = Animated.event([
@@ -239,12 +240,24 @@ export default class Card extends React.Component<Props> {
   ]);
 
   render() {
-    const { layout, animated, focused, style, children } = this.props;
+    const { layout, animated, position, next, style, children } = this.props;
+
     const progress = cond(
       eq(this.layoutWidth, 0),
       0,
-      divide(this.translateX, this.layoutWidth)
+      divide(position, this.layoutWidth)
     );
+
+    const scale = next
+      ? cond(
+          eq(this.layoutWidth, 0),
+          1,
+          interpolate(next, {
+            inputRange: [0, layout.width],
+            outputRange: [0.9, 1],
+          })
+        )
+      : 1;
 
     const opacity = interpolate(progress, {
       inputRange: [0, 1],
@@ -256,29 +269,24 @@ export default class Card extends React.Component<Props> {
         style={[
           StyleSheet.absoluteFill,
           {
-            // We don't want the user to be able to press through the overlay when drawer is open
+            // We don't want the user to be able to press through the overlay when the card is open
             // One approach is to adjust the pointerEvents based on the progress
             // But we can also send the overlay behind the screen, which works, and is much less code
             zIndex: cond(greaterThan(progress, 0), 0, -1),
+            transform: [{ scale }],
           },
         ]}
       >
         <Animated.View style={[styles.overlay, { opacity }]} />
         <PanGestureHandler
-          enabled={layout.width !== 0 && animated && focused}
+          enabled={layout.width !== 0 && animated}
           onGestureEvent={this.handleGestureEvent}
           onHandlerStateChange={this.handleGestureEvent}
         >
           <Animated.View
             style={[
               styles.card,
-              {
-                transform: [
-                  {
-                    translateX: this.translateX,
-                  },
-                ],
-              },
+              { transform: [{ translateX: this.translateX }] },
               style,
             ]}
           >
@@ -297,7 +305,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowColor: '#000',
     backgroundColor: 'white',
-    elevation: 4
+    elevation: 4,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
