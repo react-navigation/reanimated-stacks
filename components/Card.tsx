@@ -248,16 +248,16 @@ export default class Card extends React.Component<Props> {
       divide(position, this.layoutWidth)
     );
 
-    const scale = next
+    const translateX = next
       ? cond(
           eq(this.layoutWidth, 0),
           1,
           interpolate(next, {
             inputRange: [0, layout.width],
-            outputRange: [0.9, 1],
+            outputRange: [-80, 0],
           })
         )
-      : 1;
+      : 0;
 
     const opacity = interpolate(progress, {
       inputRange: [0, 1],
@@ -273,7 +273,7 @@ export default class Card extends React.Component<Props> {
             // One approach is to adjust the pointerEvents based on the progress
             // But we can also send the overlay behind the screen, which works, and is much less code
             zIndex: cond(greaterThan(progress, 0), 0, -1),
-            transform: [{ scale }],
+            transform: [{ translateX }],
           },
         ]}
       >
