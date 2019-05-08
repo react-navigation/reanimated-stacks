@@ -11,7 +11,7 @@ export type SceneProps = {
   layout: Layout;
   current: Animated.Value<number>;
   next?: Animated.Value<number>;
-  animationsEnabled: boolean;
+  isFirst: boolean;
 };
 
 type Props = {
@@ -56,7 +56,7 @@ export default class Stack extends React.Component<Props, State> {
             layout,
             current: progress[index],
             next: progress[index + 1],
-            animationsEnabled: index !== 0,
+            isFirst: index === 0,
           })
         )}
       </View>

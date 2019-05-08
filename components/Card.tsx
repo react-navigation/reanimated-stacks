@@ -18,10 +18,10 @@ type Props = {
     restSpeedThreshold?: number;
     restDisplacementThreshold?: number;
   };
-  animationsEnabled: boolean;
+  isFirst?: boolean;
   gesturesEnabled: boolean;
-  onRemove: () => void;
-  children: React.ReactNode;
+  onGoBack: () => void;
+  children: (props: { goBack: () => void }) => React.ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -76,20 +76,19 @@ const SPRING_CONFIG = {
 export default class Card extends React.Component<Props> {
   static defaultProps = {
     direction: 'horizontal',
-    animationsEnabled: true,
     gesturesEnabled: true,
   };
 
   componentDidMount() {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBack);
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
   }
 
   componentWillUnmount() {
-    BackHandler.removeEventListener('hardwareBackPress', this.handleBack);
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
   }
 
-  private handleBack = () => {
-    if (this.isVisibleValue) {
+  private handleBackPress = () => {
+    if (this.isVisibleValue && !this.props.isFirst) {
       this.nextIsVisible.setValue(FALSE);
 
       return true;
@@ -98,8 +97,12 @@ export default class Card extends React.Component<Props> {
     }
   };
 
+  private handleGoBack = () => {
+    this.props.isFirst || this.nextIsVisible.setValue(FALSE);
+  };
+
   componentDidUpdate(prevProps: Props) {
-    const { layout, direction, animationsEnabled, springConfig } = this.props;
+    const { layout, direction, isFirst, springConfig } = this.props;
     const { width, height } = layout;
 
     if (width !== prevProps.layout.width) {
@@ -116,8 +119,8 @@ export default class Card extends React.Component<Props> {
       );
     }
 
-    if (animationsEnabled !== prevProps.animationsEnabled) {
-      this.isAnimated.setValue(animationsEnabled ? TRUE : FALSE);
+    if (isFirst !== prevProps.isFirst) {
+      this.isAnimated.setValue(isFirst ? FALSE : TRUE);
     }
 
     if (springConfig !== prevProps.springConfig) {
@@ -155,20 +158,27 @@ export default class Card extends React.Component<Props> {
 
   private isVisibleValue = TRUE;
 
-  private isAnimated = new Value<Binary>(this.props.animationsEnabled ? TRUE : FALSE);
+  private isAnimated = new Value<Binary>(this.props.isFirst ? FALSE : TRUE);
   private isVisible = new Value<Binary>(TRUE);
   private nextIsVisible = new Value<Binary | -1>(UNSET);
 
   private clock = new Clock();
-  private layout = {
-    width: new Value(this.props.layout.width),
-    height: new Value(this.props.layout.height),
-  };
 
   private direction = new Value(
     this.props.direction === 'vertical'
       ? DIRECTION_VERTICAL
       : DIRECTION_HORIZONTAL
+  );
+
+  private layout = {
+    width: new Value(this.props.layout.width),
+    height: new Value(this.props.layout.height),
+  };
+
+  private distance = cond(
+    eq(this.direction, DIRECTION_VERTICAL),
+    this.layout.height,
+    this.layout.width
   );
 
   private position = new Value(
@@ -230,18 +240,7 @@ export default class Card extends React.Component<Props> {
       cond(clockRunning(this.clock), NOOP, [
         // Animation wasn't running before
         // Set the initial values and start the clock
-        set(
-          toValue,
-          cond(
-            isVisible,
-            0,
-            cond(
-              eq(this.direction, DIRECTION_VERTICAL),
-              this.layout.height,
-              this.layout.width
-            )
-          )
-        ),
+        set(toValue, cond(isVisible, 0, this.distance)),
         set(frameTime, 0),
         set(state.time, 0),
         set(state.finished, FALSE),
@@ -264,7 +263,7 @@ export default class Card extends React.Component<Props> {
           const isVisible = Boolean(value);
 
           if (!isVisible) {
-            this.props.onRemove();
+            this.props.onGoBack();
           }
         }),
       ]),
@@ -295,14 +294,7 @@ export default class Card extends React.Component<Props> {
         or(eq(this.layout.width, 0), eq(this.layout.height, 0)),
         this.isVisible,
         interpolate(this.position, {
-          inputRange: [
-            0,
-            cond(
-              eq(this.direction, DIRECTION_VERTICAL),
-              this.layout.height,
-              this.layout.width
-            ),
-          ],
+          inputRange: [0, this.distance],
           outputRange: [1, 0],
         })
       )
@@ -356,7 +348,7 @@ export default class Card extends React.Component<Props> {
               this.isVisible
             )
           ),
-          set(this.position, 0)
+          set(this.position, cond(this.isVisible, 0, this.distance))
         ),
       ]
     ),
@@ -389,7 +381,7 @@ export default class Card extends React.Component<Props> {
       current,
       next,
       direction,
-      animationsEnabled,
+      isFirst,
       gesturesEnabled,
       style,
       children,
@@ -426,7 +418,7 @@ export default class Card extends React.Component<Props> {
       >
         <Animated.View style={[styles.overlay, { opacity: current }]} />
         <PanGestureHandler
-          enabled={layout.width !== 0 && animationsEnabled && gesturesEnabled}
+          enabled={layout.width !== 0 && !isFirst && gesturesEnabled}
           onGestureEvent={handleGestureEvent}
           onHandlerStateChange={handleGestureEvent}
         >
@@ -443,7 +435,9 @@ export default class Card extends React.Component<Props> {
               style,
             ]}
           >
-            {children}
+            {children({
+              goBack: this.handleGoBack,
+            })}
           </Animated.View>
         </PanGestureHandler>
       </Animated.View>

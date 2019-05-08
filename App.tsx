@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, Button } from 'react-native';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import Stack, { SceneProps, Route } from './components/Stack';
 import Card from './components/Card';
 
@@ -17,22 +17,34 @@ export default class App extends React.Component<{}, State> {
       <Card
         {...rest}
         key={route.key}
-        onRemove={() =>
+        onGoBack={() =>
           this.setState(state => ({
             routes: state.routes.filter(r => r !== route),
           }))
         }
-        style={{ alignItems: 'center', justifyContent: 'center' }}
+        style={styles.scene}
       >
-        <Text>{route.key}</Text>
-        <Button
-          title="Add screen"
-          onPress={() => {
-            this.setState(state => ({
-              routes: [...state.routes, { key: String(state.routes.length) }],
-            }));
-          }}
-        />
+        {({ goBack }: { goBack: () => void }) => (
+          <React.Fragment>
+            <Text style={styles.item}>{route.key}</Text>
+            <View style={styles.item}>
+              <Button
+                title="Add screen"
+                onPress={() => {
+                  this.setState(state => ({
+                    routes: [
+                      ...state.routes,
+                      { key: String(state.routes.length) },
+                    ],
+                  }));
+                }}
+              />
+            </View>
+            <View style={styles.item}>
+              <Button title="Go back" onPress={goBack} />
+            </View>
+          </React.Fragment>
+        )}
       </Card>
     );
   };
@@ -41,3 +53,13 @@ export default class App extends React.Component<{}, State> {
     return <Stack routes={this.state.routes} renderScene={this.renderScene} />;
   }
 }
+
+const styles = StyleSheet.create({
+  item: {
+    margin: 8,
+  },
+  scene: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
