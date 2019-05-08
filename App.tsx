@@ -17,14 +17,14 @@ export default class App extends React.Component<{}, State> {
       <Card
         {...rest}
         key={route.key}
-        onGoBack={() =>
+        onClose={() =>
           this.setState(state => ({
             routes: state.routes.filter(r => r !== route),
           }))
         }
         style={styles.scene}
       >
-        {({ goBack }: { goBack: () => void }) => (
+        {({ close }: { close: () => void }) => (
           <React.Fragment>
             <Text style={styles.item}>{route.key}</Text>
             <View style={styles.item}>
@@ -41,7 +41,7 @@ export default class App extends React.Component<{}, State> {
               />
             </View>
             <View style={styles.item}>
-              <Button title="Go back" onPress={goBack} />
+              <Button title="Go back" onPress={close} />
             </View>
           </React.Fragment>
         )}

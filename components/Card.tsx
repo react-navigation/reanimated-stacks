@@ -20,8 +20,9 @@ type Props = {
   };
   isFirst?: boolean;
   gesturesEnabled: boolean;
-  onGoBack: () => void;
-  children: (props: { goBack: () => void }) => React.ReactNode;
+  onOpen?: () => void;
+  onClose?: () => void;
+  children: (props: { close: () => void }) => React.ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -97,7 +98,7 @@ export default class Card extends React.Component<Props> {
     }
   };
 
-  private handleGoBack = () => {
+  private handleClose = () => {
     this.props.isFirst || this.nextIsVisible.setValue(FALSE);
   };
 
@@ -156,6 +157,7 @@ export default class Card extends React.Component<Props> {
     }
   }
 
+  private isOpen = false;
   private isVisibleValue = TRUE;
 
   private isAnimated = new Value<Binary>(this.props.isFirst ? FALSE : TRUE);
@@ -260,11 +262,18 @@ export default class Card extends React.Component<Props> {
         // When the animation finishes, stop the clock
         stopClock(this.clock),
         call([this.isVisible], ([value]: ReadonlyArray<Binary>) => {
-          const isVisible = Boolean(value);
+          const isOpen = Boolean(value);
+          const { onOpen, onClose } = this.props;
 
-          if (!isVisible) {
-            this.props.onGoBack();
+          if (isOpen !== this.isOpen) {
+            if (isOpen) {
+              onOpen && onOpen();
+            } else {
+              onClose && onClose();
+            }
           }
+
+          this.isOpen = isOpen;
         }),
       ]),
     ]);
@@ -426,7 +435,7 @@ export default class Card extends React.Component<Props> {
             ]}
           >
             {children({
-              goBack: this.handleGoBack,
+              close: this.handleClose,
             })}
           </Animated.View>
         </PanGestureHandler>
