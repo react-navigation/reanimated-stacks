@@ -7,8 +7,8 @@ import {
 } from 'react-native-gesture-handler';
 
 type Props = {
-  next?: Animated.Value<number>;
-  position: Animated.Value<number>;
+  next: Animated.Node<number>;
+  current: Animated.Value<number>;
   layout: { width: number };
   animated: boolean;
   onRemove: () => void;
@@ -32,7 +32,6 @@ const {
   cond,
   eq,
   neq,
-  divide,
   set,
   and,
   or,
@@ -87,7 +86,6 @@ export default class Card extends React.Component<Props> {
 
     if (width !== prevProps.layout.width) {
       this.layoutWidth.setValue(width);
-      this.props.position.setValue(width);
     }
 
     if (animated !== prevProps.animated) {
@@ -104,6 +102,8 @@ export default class Card extends React.Component<Props> {
   private clock = new Clock();
   private layoutWidth = new Value(this.props.layout.width);
 
+  private position = new Value(this.props.layout.width);
+
   private gestureX = new Value(0);
   private offsetX = new Value(0);
   private velocityX = new Value(0);
@@ -117,7 +117,7 @@ export default class Card extends React.Component<Props> {
     const frameTime = new Value(0);
 
     const state = {
-      position: this.props.position,
+      position: this.position,
       time: new Value(0),
       finished: new Value(FALSE),
     };
@@ -173,6 +173,18 @@ export default class Card extends React.Component<Props> {
         set(this.nextIsVisible, UNSET),
       ])
     ),
+    // Synchronize the translation with the animated value representing the progress
+    set(
+      this.props.current,
+      cond(
+        eq(this.layoutWidth, 0),
+        this.isVisible,
+        interpolate(this.position, {
+          inputRange: [0, this.layoutWidth],
+          outputRange: [1, 0],
+        })
+      )
+    ),
     cond(
       eq(this.gestureState, GestureState.ACTIVE),
       [
@@ -181,10 +193,10 @@ export default class Card extends React.Component<Props> {
           set(this.isSwiping, TRUE),
           set(this.isSwipeGesture, TRUE),
           // Also update the drag offset to the last position
-          set(this.offsetX, this.props.position),
+          set(this.offsetX, this.position),
         ]),
         // Update position with next offset + gesture distance
-        set(this.props.position, max(add(this.offsetX, this.gestureX), 0)),
+        set(this.position, max(add(this.offsetX, this.gestureX), 0)),
         // Stop animations while we're dragging
         stopClock(this.clock),
       ],
@@ -222,11 +234,11 @@ export default class Card extends React.Component<Props> {
               this.isVisible
             )
           ),
-          set(this.props.position, 0)
+          set(this.position, 0)
         ),
       ]
     ),
-    this.props.position,
+    this.position,
   ]);
 
   private handleGestureEvent = Animated.event([
@@ -240,28 +252,11 @@ export default class Card extends React.Component<Props> {
   ]);
 
   render() {
-    const { layout, animated, position, next, style, children } = this.props;
+    const { layout, animated, current, next, style, children } = this.props;
 
-    const progress = cond(
-      eq(this.layoutWidth, 0),
-      0,
-      divide(position, this.layoutWidth)
-    );
-
-    const translateX = next
-      ? cond(
-          eq(this.layoutWidth, 0),
-          1,
-          interpolate(next, {
-            inputRange: [0, layout.width],
-            outputRange: [-80, 0],
-          })
-        )
-      : 0;
-
-    const opacity = interpolate(progress, {
+    const translateX = interpolate(next, {
       inputRange: [0, 1],
-      outputRange: [1, 0],
+      outputRange: [0, -80],
     });
 
     return (
@@ -272,12 +267,12 @@ export default class Card extends React.Component<Props> {
             // We don't want the user to be able to press through the overlay when the card is open
             // One approach is to adjust the pointerEvents based on the progress
             // But we can also send the overlay behind the screen, which works, and is much less code
-            zIndex: cond(greaterThan(progress, 0), 0, -1),
+            zIndex: cond(greaterThan(current, 0), 0, -1),
             transform: [{ translateX }],
           },
         ]}
       >
-        <Animated.View style={[styles.overlay, { opacity }]} />
+        <Animated.View style={[styles.overlay, { opacity: current }]} />
         <PanGestureHandler
           enabled={layout.width !== 0 && animated}
           onGestureEvent={this.handleGestureEvent}

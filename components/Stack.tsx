@@ -12,29 +12,31 @@ type Props = {
     route: Route;
     layout: Layout;
     animated: boolean;
-    position: Animated.Value<number>
+    current: Animated.Value<number>
     next?: Animated.Value<number>
   }) => React.ReactNode;
 };
 
 type State = {
-  positions: Animated.Value<number>[];
+  progress: Animated.Value<number>[];
   layout: Layout;
 };
 
 export default class Stack extends React.Component<Props, State> {
   static getDerivedStateFromProps(props: Props, state: State) {
     return {
-      positions: props.routes.map(
-        (_, i) => state.positions[i] || new Animated.Value(state.layout.width)
+      progress: props.routes.map(
+        (_, i) => state.progress[i] || new Animated.Value(1)
       ),
     };
   }
 
   state: State = {
-    positions: [],
+    progress: [],
     layout: { width: 0 },
   };
+
+  private next = new Animated.Value(0);
 
   private handleLayout = (e: LayoutChangeEvent) => {
     this.setState({ layout: { width: e.nativeEvent.layout.width } });
@@ -42,7 +44,7 @@ export default class Stack extends React.Component<Props, State> {
 
   render() {
     const { routes, renderScene } = this.props;
-    const { layout, positions } = this.state;
+    const { layout, progress } = this.state;
 
     return (
       <View style={styles.container} onLayout={this.handleLayout}>
@@ -51,8 +53,8 @@ export default class Stack extends React.Component<Props, State> {
             route,
             layout,
             animated: index !== 0,
-            position: positions[index],
-            next: positions[index + 1]
+            current: progress[index],
+            next: progress[index + 1] || this.next
           })
         )}
       </View>

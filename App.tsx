@@ -21,13 +21,13 @@ export default class App extends React.Component<{}, State> {
     route,
     layout,
     animated,
-    position,
+    current,
     next,
   }: {
     route: Route;
     layout: Layout;
     animated: boolean;
-    position: Animated.Value<number>
+    current: Animated.Value<number>
     next?: Animated.Value<number>
   }) => {
     return (
@@ -35,7 +35,7 @@ export default class App extends React.Component<{}, State> {
         key={route.key}
         layout={layout}
         animated={animated}
-        position={position}
+        current={current}
         next={next}
         onRemove={() =>
           this.setState(state => ({
