@@ -11,6 +11,13 @@ type Props = {
   current: Animated.Value<number>;
   layout: { width: number };
   animated: boolean;
+  springConfig?: {
+    damping?: number;
+    mass?: number;
+    stiffness?: number;
+    restSpeedThreshold?: number;
+    restDisplacementThreshold?: number;
+  };
   onRemove: () => void;
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -81,7 +88,7 @@ export default class Card extends React.Component<Props> {
   };
 
   componentDidUpdate(prevProps: Props) {
-    const { layout, animated } = this.props;
+    const { layout, animated, springConfig } = this.props;
     const { width } = layout;
 
     if (width !== prevProps.layout.width) {
@@ -90,6 +97,38 @@ export default class Card extends React.Component<Props> {
 
     if (animated !== prevProps.animated) {
       this.isAnimated.setValue(animated ? TRUE : FALSE);
+    }
+
+    if (springConfig !== prevProps.springConfig) {
+      this.springConfig.damping.setValue(
+        springConfig && springConfig.damping !== undefined
+          ? springConfig.damping
+          : SPRING_CONFIG.damping
+      );
+
+      this.springConfig.mass.setValue(
+        springConfig && springConfig.mass !== undefined
+          ? springConfig.mass
+          : SPRING_CONFIG.mass
+      );
+
+      this.springConfig.stiffness.setValue(
+        springConfig && springConfig.stiffness !== undefined
+          ? springConfig.stiffness
+          : SPRING_CONFIG.stiffness
+      );
+
+      this.springConfig.restSpeedThreshold.setValue(
+        springConfig && springConfig.restSpeedThreshold !== undefined
+          ? springConfig.restSpeedThreshold
+          : SPRING_CONFIG.restSpeedThreshold
+      );
+
+      this.springConfig.restDisplacementThreshold.setValue(
+        springConfig && springConfig.restDisplacementThreshold !== undefined
+          ? springConfig.restDisplacementThreshold
+          : SPRING_CONFIG.restDisplacementThreshold
+      );
     }
   }
 
@@ -111,6 +150,36 @@ export default class Card extends React.Component<Props> {
 
   private isSwiping = new Value(FALSE);
   private isSwipeGesture = new Value(FALSE);
+
+  private springConfig = {
+    damping: new Value(
+      this.props.springConfig && this.props.springConfig.damping !== undefined
+        ? this.props.springConfig.damping
+        : SPRING_CONFIG.damping
+    ),
+    mass: new Value(
+      this.props.springConfig && this.props.springConfig.mass !== undefined
+        ? this.props.springConfig.mass
+        : SPRING_CONFIG.mass
+    ),
+    stiffness: new Value(
+      this.props.springConfig && this.props.springConfig.stiffness !== undefined
+        ? this.props.springConfig.stiffness
+        : SPRING_CONFIG.stiffness
+    ),
+    restSpeedThreshold: new Value(
+      this.props.springConfig &&
+      this.props.springConfig.restSpeedThreshold !== undefined
+        ? this.props.springConfig.restSpeedThreshold
+        : SPRING_CONFIG.restSpeedThreshold
+    ),
+    restDisplacementThreshold: new Value(
+      this.props.springConfig &&
+      this.props.springConfig.restDisplacementThreshold !== undefined
+        ? springConfig.restDisplacementThreshold
+        : SPRING_CONFIG.restDisplacementThreshold
+    ),
+  };
 
   private transitionTo = (isVisible: Binary | Animated.Node<number>) => {
     const toValue = new Value(0);
@@ -136,7 +205,7 @@ export default class Card extends React.Component<Props> {
       spring(
         this.clock,
         { ...state, velocity: this.velocityX },
-        { ...SPRING_CONFIG, toValue }
+        { ...SPRING_CONFIG, ...this.springConfig, toValue }
       ),
       cond(state.finished, [
         // Reset values
