@@ -37,6 +37,7 @@ export default class App extends React.Component<{}, State> {
         animated={animated}
         current={current}
         next={next}
+        direction="vertical"
         onRemove={() =>
           this.setState(state => ({
             routes: state.routes.filter(r => r !== route),

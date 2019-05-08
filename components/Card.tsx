@@ -7,9 +7,10 @@ import {
 } from 'react-native-gesture-handler';
 
 type Props = {
-  next: Animated.Node<number>;
+  direction: 'horizontal' | 'vertical';
+  next?: Animated.Node<number>;
   current: Animated.Value<number>;
-  layout: { width: number };
+  layout: { width: number; height: number };
   animated: boolean;
   springConfig?: {
     damping?: number;
@@ -29,6 +30,9 @@ const TRUE = 1;
 const FALSE = 0;
 const NOOP = 0;
 const UNSET = -1;
+
+const DIRECTION_VERTICAL = -1;
+const DIRECTION_HORIZONTAL = 1;
 
 const SWIPE_VELOCITY_THRESHOLD_DEFAULT = 500;
 const SWIPE_DISTANCE_THRESHOLD_DEFAULT = 60;
@@ -69,6 +73,10 @@ const SPRING_CONFIG = {
 };
 
 export default class Card extends React.Component<Props> {
+  static defaultProps = {
+    direction: 'horizontal',
+  };
+
   componentDidMount() {
     BackHandler.addEventListener('hardwareBackPress', this.handleBack);
   }
@@ -88,15 +96,25 @@ export default class Card extends React.Component<Props> {
   };
 
   componentDidUpdate(prevProps: Props) {
-    const { layout, animated, springConfig } = this.props;
-    const { width } = layout;
+    const { layout, animated, direction, springConfig } = this.props;
+    const { width, height } = layout;
 
     if (width !== prevProps.layout.width) {
-      this.layoutWidth.setValue(width);
+      this.layout.width.setValue(width);
+    }
+
+    if (height !== prevProps.layout.height) {
+      this.layout.height.setValue(height);
     }
 
     if (animated !== prevProps.animated) {
       this.isAnimated.setValue(animated ? TRUE : FALSE);
+    }
+
+    if (direction !== prevProps.direction) {
+      this.direction.setValue(
+        direction === 'vertical' ? DIRECTION_VERTICAL : DIRECTION_HORIZONTAL
+      );
     }
 
     if (springConfig !== prevProps.springConfig) {
@@ -139,13 +157,27 @@ export default class Card extends React.Component<Props> {
   private nextIsVisible = new Value<Binary | -1>(UNSET);
 
   private clock = new Clock();
-  private layoutWidth = new Value(this.props.layout.width);
+  private layout = {
+    width: new Value(this.props.layout.width),
+    height: new Value(this.props.layout.height),
+  };
 
-  private position = new Value(this.props.layout.width);
+  private direction = new Value(
+    this.props.direction === 'vertical'
+      ? DIRECTION_VERTICAL
+      : DIRECTION_HORIZONTAL
+  );
 
-  private gestureX = new Value(0);
-  private offsetX = new Value(0);
-  private velocityX = new Value(0);
+  private position = new Value(
+    this.props.direction === 'vertical'
+      ? this.props.layout.height
+      : this.props.layout.width
+  );
+
+  private gesture = new Value(0);
+  private offset = new Value(0);
+  private velocity = new Value(0);
+
   private gestureState = new Value(0);
 
   private isSwiping = new Value(FALSE);
@@ -176,7 +208,7 @@ export default class Card extends React.Component<Props> {
     restDisplacementThreshold: new Value(
       this.props.springConfig &&
       this.props.springConfig.restDisplacementThreshold !== undefined
-        ? springConfig.restDisplacementThreshold
+        ? this.props.springConfig.restDisplacementThreshold
         : SPRING_CONFIG.restDisplacementThreshold
     ),
   };
@@ -195,7 +227,18 @@ export default class Card extends React.Component<Props> {
       cond(clockRunning(this.clock), NOOP, [
         // Animation wasn't running before
         // Set the initial values and start the clock
-        set(toValue, cond(isVisible, 0, this.layoutWidth)),
+        set(
+          toValue,
+          cond(
+            isVisible,
+            0,
+            cond(
+              eq(this.direction, DIRECTION_VERTICAL),
+              this.layout.height,
+              this.layout.width
+            )
+          )
+        ),
         set(frameTime, 0),
         set(state.time, 0),
         set(state.finished, FALSE),
@@ -204,14 +247,14 @@ export default class Card extends React.Component<Props> {
       ]),
       spring(
         this.clock,
-        { ...state, velocity: this.velocityX },
+        { ...state, velocity: this.velocity },
         { ...SPRING_CONFIG, ...this.springConfig, toValue }
       ),
       cond(state.finished, [
         // Reset values
         set(this.isSwipeGesture, FALSE),
-        set(this.gestureX, 0),
-        set(this.velocityX, 0),
+        set(this.gesture, 0),
+        set(this.velocity, 0),
         // When the animation finishes, stop the clock
         stopClock(this.clock),
         call([this.isVisible], ([value]: ReadonlyArray<Binary>) => {
@@ -225,7 +268,7 @@ export default class Card extends React.Component<Props> {
     ]);
   };
 
-  private translateX = block([
+  private translate = block([
     onChange(
       this.isVisible,
       call([this.isVisible], ([value]) => {
@@ -246,10 +289,17 @@ export default class Card extends React.Component<Props> {
     set(
       this.props.current,
       cond(
-        eq(this.layoutWidth, 0),
+        or(eq(this.layout.width, 0), eq(this.layout.height, 0)),
         this.isVisible,
         interpolate(this.position, {
-          inputRange: [0, this.layoutWidth],
+          inputRange: [
+            0,
+            cond(
+              eq(this.direction, DIRECTION_VERTICAL),
+              this.layout.height,
+              this.layout.width
+            ),
+          ],
           outputRange: [1, 0],
         })
       )
@@ -262,10 +312,10 @@ export default class Card extends React.Component<Props> {
           set(this.isSwiping, TRUE),
           set(this.isSwipeGesture, TRUE),
           // Also update the drag offset to the last position
-          set(this.offsetX, this.position),
+          set(this.offset, this.position),
         ]),
         // Update position with next offset + gesture distance
-        set(this.position, max(add(this.offsetX, this.gestureX), 0)),
+        set(this.position, max(add(this.offset, this.gesture), 0)),
         // Stop animations while we're dragging
         stopClock(this.clock),
       ],
@@ -277,15 +327,15 @@ export default class Card extends React.Component<Props> {
             cond(
               or(
                 and(
-                  greaterThan(abs(this.gestureX), SWIPE_DISTANCE_MINIMUM),
+                  greaterThan(abs(this.gesture), SWIPE_DISTANCE_MINIMUM),
                   greaterThan(
-                    abs(this.velocityX),
+                    abs(this.velocity),
                     SWIPE_VELOCITY_THRESHOLD_DEFAULT
                   )
                 ),
                 cond(
                   greaterThan(
-                    abs(this.gestureX),
+                    abs(this.gesture),
                     SWIPE_DISTANCE_THRESHOLD_DEFAULT
                   ),
                   TRUE,
@@ -294,7 +344,7 @@ export default class Card extends React.Component<Props> {
               ),
               cond(
                 lessThan(
-                  cond(eq(this.velocityX, 0), this.gestureX, this.velocityX),
+                  cond(eq(this.velocity, 0), this.gesture, this.velocity),
                   0
                 ),
                 TRUE,
@@ -310,23 +360,48 @@ export default class Card extends React.Component<Props> {
     this.position,
   ]);
 
-  private handleGestureEvent = Animated.event([
+  private handleGestureEventHorizontal = Animated.event([
     {
       nativeEvent: {
-        translationX: this.gestureX,
-        velocityX: this.velocityX,
+        translationX: this.gesture,
+        velocityX: this.velocity,
+        state: this.gestureState,
+      },
+    },
+  ]);
+
+  private handleGestureEventVertical = Animated.event([
+    {
+      nativeEvent: {
+        translationY: this.gesture,
+        velocityY: this.velocity,
         state: this.gestureState,
       },
     },
   ]);
 
   render() {
-    const { layout, animated, current, next, style, children } = this.props;
+    const {
+      layout,
+      animated,
+      current,
+      next,
+      direction,
+      style,
+      children,
+    } = this.props;
 
-    const translateX = interpolate(next, {
-      inputRange: [0, 1],
-      outputRange: [0, -80],
-    });
+    const translate = next
+      ? interpolate(next, {
+          inputRange: [0, 1],
+          outputRange: [0, -80],
+        })
+      : 0;
+
+    const handleGestureEvent =
+      direction === 'vertical'
+        ? this.handleGestureEventVertical
+        : this.handleGestureEventHorizontal;
 
     return (
       <Animated.View
@@ -337,20 +412,30 @@ export default class Card extends React.Component<Props> {
             // One approach is to adjust the pointerEvents based on the progress
             // But we can also send the overlay behind the screen, which works, and is much less code
             zIndex: cond(greaterThan(current, 0), 0, -1),
-            transform: [{ translateX }],
+            transform: [
+              direction === 'vertical'
+                ? { translateY: translate }
+                : { translateX: translate },
+            ],
           },
         ]}
       >
         <Animated.View style={[styles.overlay, { opacity: current }]} />
         <PanGestureHandler
           enabled={layout.width !== 0 && animated}
-          onGestureEvent={this.handleGestureEvent}
-          onHandlerStateChange={this.handleGestureEvent}
+          onGestureEvent={handleGestureEvent}
+          onHandlerStateChange={handleGestureEvent}
         >
           <Animated.View
             style={[
               styles.card,
-              { transform: [{ translateX: this.translateX }] },
+              {
+                transform: [
+                  direction === 'vertical'
+                    ? { translateY: this.translate }
+                    : { translateX: this.translate },
+                ],
+              },
               style,
             ]}
           >

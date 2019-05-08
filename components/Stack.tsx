@@ -4,7 +4,7 @@ import Animated from 'react-native-reanimated';
 
 type Route = { key: string };
 
-type Layout = { width: number };
+type Layout = { width: number; height: number };
 
 type Props = {
   routes: Route[];
@@ -12,8 +12,8 @@ type Props = {
     route: Route;
     layout: Layout;
     animated: boolean;
-    current: Animated.Value<number>
-    next?: Animated.Value<number>
+    current: Animated.Value<number>;
+    next?: Animated.Value<number>;
   }) => React.ReactNode;
 };
 
@@ -33,13 +33,13 @@ export default class Stack extends React.Component<Props, State> {
 
   state: State = {
     progress: [],
-    layout: { width: 0 },
+    layout: { width: 0, height: 0 },
   };
 
-  private next = new Animated.Value(0);
-
   private handleLayout = (e: LayoutChangeEvent) => {
-    this.setState({ layout: { width: e.nativeEvent.layout.width } });
+    const { height, width } = e.nativeEvent.layout;
+
+    this.setState({ layout: { width, height } });
   };
 
   render() {
@@ -54,7 +54,7 @@ export default class Stack extends React.Component<Props, State> {
             layout,
             animated: index !== 0,
             current: progress[index],
-            next: progress[index + 1] || this.next
+            next: progress[index + 1],
           })
         )}
       </View>
