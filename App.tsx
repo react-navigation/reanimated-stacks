@@ -1,12 +1,7 @@
 import * as React from 'react';
 import { Text, Button } from 'react-native';
-import Animated from 'react-native-reanimated';
-import Stack from './components/Stack';
+import Stack, { SceneProps, Route } from './components/Stack';
 import Card from './components/Card';
-
-type Route = { key: string };
-
-type Layout = { width: number };
 
 type State = {
   routes: Route[];
@@ -17,33 +12,18 @@ export default class App extends React.Component<{}, State> {
     routes: [{ key: '0' }],
   };
 
-  private renderScene = ({
-    route,
-    layout,
-    animated,
-    current,
-    next,
-  }: {
-    route: Route;
-    layout: Layout;
-    animated: boolean;
-    current: Animated.Value<number>
-    next?: Animated.Value<number>
-  }) => {
+  private renderScene = ({ route, ...rest }: SceneProps) => {
     return (
       <Card
+        {...rest}
         key={route.key}
-        layout={layout}
-        animated={animated}
-        current={current}
-        next={next}
-        direction="vertical"
         onRemove={() =>
           this.setState(state => ({
             routes: state.routes.filter(r => r !== route),
           }))
         }
-        style={{ alignItems: 'center', justifyContent: 'center' }}>
+        style={{ alignItems: 'center', justifyContent: 'center' }}
+      >
         <Text>{route.key}</Text>
         <Button
           title="Add screen"

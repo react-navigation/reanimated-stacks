@@ -11,7 +11,6 @@ type Props = {
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
   layout: { width: number; height: number };
-  animated: boolean;
   springConfig?: {
     damping?: number;
     mass?: number;
@@ -19,6 +18,8 @@ type Props = {
     restSpeedThreshold?: number;
     restDisplacementThreshold?: number;
   };
+  animationsEnabled: boolean;
+  gesturesEnabled: boolean;
   onRemove: () => void;
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
@@ -75,6 +76,8 @@ const SPRING_CONFIG = {
 export default class Card extends React.Component<Props> {
   static defaultProps = {
     direction: 'horizontal',
+    animationsEnabled: true,
+    gesturesEnabled: true,
   };
 
   componentDidMount() {
@@ -96,7 +99,7 @@ export default class Card extends React.Component<Props> {
   };
 
   componentDidUpdate(prevProps: Props) {
-    const { layout, animated, direction, springConfig } = this.props;
+    const { layout, direction, animationsEnabled, springConfig } = this.props;
     const { width, height } = layout;
 
     if (width !== prevProps.layout.width) {
@@ -107,14 +110,14 @@ export default class Card extends React.Component<Props> {
       this.layout.height.setValue(height);
     }
 
-    if (animated !== prevProps.animated) {
-      this.isAnimated.setValue(animated ? TRUE : FALSE);
-    }
-
     if (direction !== prevProps.direction) {
       this.direction.setValue(
         direction === 'vertical' ? DIRECTION_VERTICAL : DIRECTION_HORIZONTAL
       );
+    }
+
+    if (animationsEnabled !== prevProps.animationsEnabled) {
+      this.isAnimated.setValue(animationsEnabled ? TRUE : FALSE);
     }
 
     if (springConfig !== prevProps.springConfig) {
@@ -152,7 +155,7 @@ export default class Card extends React.Component<Props> {
 
   private isVisibleValue = TRUE;
 
-  private isAnimated = new Value<Binary>(this.props.animated ? TRUE : FALSE);
+  private isAnimated = new Value<Binary>(this.props.animationsEnabled ? TRUE : FALSE);
   private isVisible = new Value<Binary>(TRUE);
   private nextIsVisible = new Value<Binary | -1>(UNSET);
 
@@ -383,10 +386,11 @@ export default class Card extends React.Component<Props> {
   render() {
     const {
       layout,
-      animated,
       current,
       next,
       direction,
+      animationsEnabled,
+      gesturesEnabled,
       style,
       children,
     } = this.props;
@@ -422,7 +426,7 @@ export default class Card extends React.Component<Props> {
       >
         <Animated.View style={[styles.overlay, { opacity: current }]} />
         <PanGestureHandler
-          enabled={layout.width !== 0 && animated}
+          enabled={layout.width !== 0 && animationsEnabled && gesturesEnabled}
           onGestureEvent={handleGestureEvent}
           onHandlerStateChange={handleGestureEvent}
         >

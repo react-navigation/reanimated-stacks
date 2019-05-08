@@ -2,19 +2,21 @@ import * as React from 'react';
 import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-type Route = { key: string };
+export type Route = { key: string };
 
-type Layout = { width: number; height: number };
+export type Layout = { width: number; height: number };
+
+export type SceneProps = {
+  route: Route;
+  layout: Layout;
+  current: Animated.Value<number>;
+  next?: Animated.Value<number>;
+  animationsEnabled: boolean;
+};
 
 type Props = {
   routes: Route[];
-  renderScene: (props: {
-    route: Route;
-    layout: Layout;
-    animated: boolean;
-    current: Animated.Value<number>;
-    next?: Animated.Value<number>;
-  }) => React.ReactNode;
+  renderScene: (props: SceneProps) => React.ReactNode;
 };
 
 type State = {
@@ -52,9 +54,9 @@ export default class Stack extends React.Component<Props, State> {
           renderScene({
             route,
             layout,
-            animated: index !== 0,
             current: progress[index],
             next: progress[index + 1],
+            animationsEnabled: index !== 0,
           })
         )}
       </View>
