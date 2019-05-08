@@ -400,22 +400,7 @@ export default class Card extends React.Component<Props> {
         : this.handleGestureEventHorizontal;
 
     return (
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          {
-            // We don't want the user to be able to press through the overlay when the card is open
-            // One approach is to adjust the pointerEvents based on the progress
-            // But we can also send the overlay behind the screen, which works, and is much less code
-            zIndex: cond(greaterThan(current, 0), 0, -1),
-            transform: [
-              direction === 'vertical'
-                ? { translateY: translate }
-                : { translateX: translate },
-            ],
-          },
-        ]}
-      >
+      <React.Fragment>
         <Animated.View style={[styles.overlay, { opacity: current }]} />
         <PanGestureHandler
           enabled={layout.width !== 0 && !isFirst && gesturesEnabled}
@@ -427,9 +412,14 @@ export default class Card extends React.Component<Props> {
               styles.card,
               {
                 transform: [
+                  // Translation for the animation of the current card
                   direction === 'vertical'
                     ? { translateY: this.translate }
                     : { translateX: this.translate },
+                  // Translation for the animation of the card on top of this
+                  direction === 'vertical'
+                    ? { translateY: translate }
+                    : { translateX: translate },
                 ],
               },
               style,
@@ -440,7 +430,7 @@ export default class Card extends React.Component<Props> {
             })}
           </Animated.View>
         </PanGestureHandler>
-      </Animated.View>
+      </React.Fragment>
     );
   }
 }
