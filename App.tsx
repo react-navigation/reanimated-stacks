@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
+import { useScreens } from 'react-native-screens';
 import Stack, { SceneProps, Route } from './components/Stack';
 import Card from './components/Card';
+
 
 type State = {
   routes: Route[];
@@ -54,6 +56,8 @@ export default class App extends React.Component<{}, State> {
     return <Stack routes={this.state.routes} renderScene={this.renderScene} />;
   }
 }
+
+useScreens();
 
 const styles = StyleSheet.create({
   item: {

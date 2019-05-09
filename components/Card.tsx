@@ -1,20 +1,16 @@
 import * as React from 'react';
-import {
-  View,
-  StyleSheet,
-  BackHandler,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
+import { StyleSheet, BackHandler, StyleProp, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
   State as GestureState,
 } from 'react-native-gesture-handler';
+import { Screen } from 'react-native-screens';
 
 type Props = {
   index: number;
   focused: boolean;
+  stale: boolean;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
   layout: { width: number; height: number };
@@ -313,36 +309,36 @@ export default class Card extends React.Component<Props> {
       ],
       [
         set(this.isSwiping, FALSE),
-          this.transitionTo(
-            cond(
-              or(
-                and(
-                  greaterThan(abs(this.gesture), SWIPE_DISTANCE_MINIMUM),
-                  greaterThan(
-                    abs(this.velocity),
-                    SWIPE_VELOCITY_THRESHOLD_DEFAULT
-                  )
-                ),
-                cond(
-                  greaterThan(
-                    abs(this.gesture),
-                    SWIPE_DISTANCE_THRESHOLD_DEFAULT
-                  ),
-                  TRUE,
-                  FALSE
+        this.transitionTo(
+          cond(
+            or(
+              and(
+                greaterThan(abs(this.gesture), SWIPE_DISTANCE_MINIMUM),
+                greaterThan(
+                  abs(this.velocity),
+                  SWIPE_VELOCITY_THRESHOLD_DEFAULT
                 )
               ),
               cond(
-                lessThan(
-                  cond(eq(this.velocity, 0), this.gesture, this.velocity),
-                  0
+                greaterThan(
+                  abs(this.gesture),
+                  SWIPE_DISTANCE_THRESHOLD_DEFAULT
                 ),
                 TRUE,
                 FALSE
+              )
+            ),
+            cond(
+              lessThan(
+                cond(eq(this.velocity, 0), this.gesture, this.velocity),
+                0
               ),
-              this.isVisible
-            )
-          ),
+              TRUE,
+              FALSE
+            ),
+            this.isVisible
+          )
+        ),
       ]
     ),
     this.position,
@@ -387,6 +383,7 @@ export default class Card extends React.Component<Props> {
   render() {
     const {
       focused,
+      stale,
       layout,
       current,
       next,
@@ -414,8 +411,13 @@ export default class Card extends React.Component<Props> {
         : this.handleGestureEventHorizontal;
 
     return (
-      // We need to wrap the screen in a non-collapsable view, otherwise the overlay doesn't show
-      <View collapsable={false} style={StyleSheet.absoluteFill}>
+      <Screen
+        // We need to wrap the screen in a non-collapsable view, otherwise the overlay doesn't show
+        collapsable={false}
+        // @ts-ignore
+        active={stale ? 0 : 1}
+        style={StyleSheet.absoluteFill}
+      >
         <Animated.View
           // By making the overlay click-through, the user can quickly swipe away multiple cards
           pointerEvents="none"
@@ -451,7 +453,7 @@ export default class Card extends React.Component<Props> {
             })}
           </Animated.View>
         </PanGestureHandler>
-      </View>
+      </Screen>
     );
   }
 }
