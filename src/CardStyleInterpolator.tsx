@@ -21,11 +21,11 @@ export function forHorizontalIOS({
   next,
   layout,
 }: InterpolatorProps): InterpolatedStyle {
-  const translateWhenFocused = interpolate(current, {
+  const translateFocused = interpolate(current, {
     inputRange: [0, 1],
     outputRange: [layout.width, 0],
   });
-  const translateWhenUnfocused = next
+  const translateUnfocused = next
     ? interpolate(next, {
         inputRange: [0, 1],
         outputRange: [0, layout.width * -0.3],
@@ -37,14 +37,20 @@ export function forHorizontalIOS({
     outputRange: [0, 0.07],
   });
 
+  const shadowOpacity = interpolate(current, {
+    inputRange: [0, 1],
+    outputRange: [0, 0.3],
+  });
+
   return {
     cardStyle: {
       transform: [
         // Translation for the animation of the current card
-        { translateX: translateWhenFocused },
+        { translateX: translateFocused },
         // Translation for the animation of the card on top of this
-        { translateX: translateWhenUnfocused },
+        { translateX: translateUnfocused },
       ],
+      shadowOpacity,
     },
     overlayStyle: {
       opacity,

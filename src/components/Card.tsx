@@ -451,7 +451,6 @@ export default class Card extends React.Component<Props> {
 const styles = StyleSheet.create({
   card: {
     ...StyleSheet.absoluteFillObject,
-    shadowOpacity: 0.07,
     shadowOffset: { width: -1, height: 1 },
     shadowRadius: 5,
     shadowColor: '#000',
