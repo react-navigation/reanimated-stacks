@@ -8,6 +8,14 @@ import {
 import { Screen } from 'react-native-screens';
 import { InterpolatorProps, InterpolatedStyle } from '../CardStyleInterpolator';
 
+type SpringConfig = {
+  damping?: number;
+  mass?: number;
+  stiffness?: number;
+  restSpeedThreshold?: number;
+  restDisplacementThreshold?: number;
+};
+
 type Props = {
   index: number;
   focused: boolean;
@@ -16,13 +24,7 @@ type Props = {
   current: Animated.Value<number>;
   layout: { width: number; height: number };
   direction: 'horizontal' | 'vertical';
-  springConfig?: {
-    damping?: number;
-    mass?: number;
-    stiffness?: number;
-    restSpeedThreshold?: number;
-    restDisplacementThreshold?: number;
-  };
+  springConfig?: SpringConfig;
   gesturesEnabled: boolean;
   onOpen?: () => void;
   onClose?: () => void;
@@ -112,35 +114,7 @@ export default class Card extends React.Component<Props> {
     }
 
     if (springConfig !== prevProps.springConfig) {
-      this.springConfig.damping.setValue(
-        springConfig && springConfig.damping !== undefined
-          ? springConfig.damping
-          : SPRING_CONFIG.damping
-      );
-
-      this.springConfig.mass.setValue(
-        springConfig && springConfig.mass !== undefined
-          ? springConfig.mass
-          : SPRING_CONFIG.mass
-      );
-
-      this.springConfig.stiffness.setValue(
-        springConfig && springConfig.stiffness !== undefined
-          ? springConfig.stiffness
-          : SPRING_CONFIG.stiffness
-      );
-
-      this.springConfig.restSpeedThreshold.setValue(
-        springConfig && springConfig.restSpeedThreshold !== undefined
-          ? springConfig.restSpeedThreshold
-          : SPRING_CONFIG.restSpeedThreshold
-      );
-
-      this.springConfig.restDisplacementThreshold.setValue(
-        springConfig && springConfig.restDisplacementThreshold !== undefined
-          ? springConfig.restDisplacementThreshold
-          : SPRING_CONFIG.restDisplacementThreshold
-      );
+      this.runTransition = this.createTransition({ springConfig });
     }
   }
 
@@ -184,37 +158,11 @@ export default class Card extends React.Component<Props> {
   private isSwiping = new Value(FALSE);
   private isSwipeGesture = new Value(FALSE);
 
-  private springConfig = {
-    damping: new Value(
-      this.props.springConfig && this.props.springConfig.damping !== undefined
-        ? this.props.springConfig.damping
-        : SPRING_CONFIG.damping
-    ),
-    mass: new Value(
-      this.props.springConfig && this.props.springConfig.mass !== undefined
-        ? this.props.springConfig.mass
-        : SPRING_CONFIG.mass
-    ),
-    stiffness: new Value(
-      this.props.springConfig && this.props.springConfig.stiffness !== undefined
-        ? this.props.springConfig.stiffness
-        : SPRING_CONFIG.stiffness
-    ),
-    restSpeedThreshold: new Value(
-      this.props.springConfig &&
-      this.props.springConfig.restSpeedThreshold !== undefined
-        ? this.props.springConfig.restSpeedThreshold
-        : SPRING_CONFIG.restSpeedThreshold
-    ),
-    restDisplacementThreshold: new Value(
-      this.props.springConfig &&
-      this.props.springConfig.restDisplacementThreshold !== undefined
-        ? this.props.springConfig.restDisplacementThreshold
-        : SPRING_CONFIG.restDisplacementThreshold
-    ),
-  };
-
-  private transitionTo = (isVisible: Binary | Animated.Node<number>) => {
+  private createTransition = ({
+    springConfig,
+  }: {
+    springConfig: SpringConfig;
+  }) => (isVisible: Binary | Animated.Node<number>) => {
     const toValue = new Value(0);
     const frameTime = new Value(0);
 
@@ -238,7 +186,7 @@ export default class Card extends React.Component<Props> {
       spring(
         this.clock,
         { ...state, velocity: this.velocity },
-        { ...SPRING_CONFIG, ...this.springConfig, toValue }
+        { ...SPRING_CONFIG, ...springConfig, toValue }
       ),
       cond(state.finished, [
         // Reset values
@@ -264,6 +212,10 @@ export default class Card extends React.Component<Props> {
       ]),
     ]);
   };
+
+  private runTransition = this.createTransition({
+    springConfig: this.props.springConfig,
+  });
 
   private translate = block([
     onChange(
@@ -311,7 +263,7 @@ export default class Card extends React.Component<Props> {
       ],
       [
         set(this.isSwiping, FALSE),
-        this.transitionTo(
+        this.runTransition(
           cond(
             or(
               and(
