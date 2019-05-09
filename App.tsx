@@ -4,7 +4,6 @@ import { useScreens } from 'react-native-screens';
 import Stack, { SceneProps, Route } from './components/Stack';
 import Card from './components/Card';
 
-
 type State = {
   routes: Route[];
 };
@@ -26,10 +25,9 @@ export default class App extends React.Component<{}, State> {
             routes: state.routes.filter(r => r !== route),
           }))
         }
-        style={styles.scene}
       >
         {({ close }: { close: () => void }) => (
-          <React.Fragment>
+          <View style={styles.scene}>
             <Text style={styles.item}>{rest.index}</Text>
             <View style={styles.item}>
               <Button
@@ -46,7 +44,7 @@ export default class App extends React.Component<{}, State> {
                 <Button title="Go back" onPress={close} />
               </View>
             ) : null}
-          </React.Fragment>
+          </View>
         )}
       </Card>
     );
@@ -64,6 +62,7 @@ const styles = StyleSheet.create({
     margin: 8,
   },
   scene: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, BackHandler, StyleProp, ViewStyle } from 'react-native';
+import { StyleSheet, BackHandler } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
@@ -26,7 +26,6 @@ type Props = {
   onOpen?: () => void;
   onClose?: () => void;
   children: (props: { close: () => void }) => React.ReactNode;
-  style?: StyleProp<ViewStyle>;
 };
 
 type Binary = 0 | 1;
@@ -92,7 +91,7 @@ export default class Card extends React.Component<Props> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { layout, direction, index, springConfig } = this.props;
+    const { layout, direction, springConfig } = this.props;
     const { width, height } = layout;
 
     if (width !== prevProps.layout.width) {
@@ -389,7 +388,6 @@ export default class Card extends React.Component<Props> {
       next,
       direction,
       gesturesEnabled,
-      style,
       children,
     } = this.props;
 
@@ -445,7 +443,6 @@ export default class Card extends React.Component<Props> {
                     : { translateX: translate },
                 ],
               },
-              style,
             ]}
           >
             {children({
