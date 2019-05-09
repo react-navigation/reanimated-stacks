@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, BackHandler, StyleProp, ViewStyle } from 'react-native';
+import { View, StyleSheet, BackHandler, StyleProp, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
@@ -32,8 +32,6 @@ const TRUE = 1;
 const FALSE = 0;
 const NOOP = 0;
 const UNSET = -1;
-
-const PROGRESS_EPSILON = 0.05;
 
 const DIRECTION_VERTICAL = -1;
 const DIRECTION_HORIZONTAL = 1;
@@ -411,7 +409,8 @@ export default class Card extends React.Component<Props> {
         : this.handleGestureEventHorizontal;
 
     return (
-      <React.Fragment>
+      // We need to wrap the screen in a non-collapsable view, otherwise the overlay doesn't show
+      <View collapsable={false} style={StyleSheet.absoluteFill}>
         <Animated.View
           // By making the overlay click-through, the user can quickly swipe away multiple cards
           pointerEvents="none"
@@ -445,7 +444,7 @@ export default class Card extends React.Component<Props> {
             })}
           </Animated.View>
         </PanGestureHandler>
-      </React.Fragment>
+      </View>
     );
   }
 }
