@@ -8,6 +8,7 @@ export type Layout = { width: number; height: number };
 
 export type SceneProps = {
   focused: boolean;
+  stale: boolean;
   index: number;
   route: Route;
   layout: Layout;
@@ -29,7 +30,8 @@ export default class Stack extends React.Component<Props, State> {
   static getDerivedStateFromProps(props: Props, state: State) {
     return {
       progress: props.routes.map(
-        (_, i) => state.progress[i] || new Animated.Value(1)
+        (_, i, self) =>
+          state.progress[i] || new Animated.Value(i === self.length - 1 ? 0 : 1)
       ),
     };
   }
@@ -51,16 +53,19 @@ export default class Stack extends React.Component<Props, State> {
 
     return (
       <View style={styles.container} onLayout={this.handleLayout}>
-        {routes.map((route, index, self) =>
-          renderScene({
-            focused: index === self.length - 1,
+        {routes.map((route, index, self) => {
+          const focused = index === self.length - 1;
+
+          return renderScene({
+            focused,
+            stale: index !== self.length - 2 && focused,
             index,
             route,
             layout,
             current: progress[index],
             next: progress[index + 1],
-          })
-        )}
+          });
+        })}
       </View>
     );
   }

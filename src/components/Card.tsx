@@ -6,6 +6,7 @@ import {
   State as GestureState,
 } from 'react-native-gesture-handler';
 import { Screen } from 'react-native-screens';
+import { InterpolatorProps, InterpolatedStyle } from '../CardStyleInterpolator';
 
 type Props = {
   index: number;
@@ -26,6 +27,7 @@ type Props = {
   onOpen?: () => void;
   onClose?: () => void;
   children: (props: { close: () => void }) => React.ReactNode;
+  styleInterpolator: (props: InterpolatorProps) => InterpolatedStyle;
 };
 
 type Binary = 0 | 1;
@@ -54,6 +56,7 @@ const {
   lessThan,
   add,
   max,
+  multiply,
   abs,
   block,
   stopClock,
@@ -389,18 +392,13 @@ export default class Card extends React.Component<Props> {
       direction,
       gesturesEnabled,
       children,
+      styleInterpolator,
     } = this.props;
 
-    const translate = next
-      ? interpolate(next, {
-          inputRange: [0, 1],
-          outputRange: [0, layout.width * -0.3],
-        })
-      : 0;
-
-    const opacity = interpolate(current, {
-      inputRange: [0, 1],
-      outputRange: [0, 0.07],
+    const { cardStyle, overlayStyle } = styleInterpolator({
+      current,
+      next,
+      layout,
     });
 
     const handleGestureEvent =
@@ -410,17 +408,26 @@ export default class Card extends React.Component<Props> {
 
     return (
       <Screen
-        // We need to wrap the screen in a non-collapsable view, otherwise the overlay doesn't show
+        // We need to wrap the screen in a non-collapsable view, otherwise the overlay doesn't show on Android
+        // The elevation shadow is also not-visible without this
         collapsable={false}
         // @ts-ignore
         active={stale ? 0 : 1}
-        style={StyleSheet.absoluteFill}
+        style={[StyleSheet.absoluteFill]}
+        pointerEvents="box-none"
       >
         <Animated.View
-          // By making the overlay click-through, the user can quickly swipe away multiple cards
-          pointerEvents="none"
-          style={[styles.overlay, { opacity }]}
+          // This doesn't actually do anything, but we need to pass the animated value to native
+          // Otherwise the reanimated logic won't work, this is just a hack to make sure it's passed
+          // Usually we'd pass it to the Animated.View inside the PanGestureHandler, but we can't be sure with interpolated styles
+          style={{ height: multiply(this.translate, 0) }}
         />
+        {overlayStyle ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.overlay, overlayStyle]}
+          />
+        ) : null}
         <PanGestureHandler
           enabled={layout.width !== 0 && !this.isFirst() && gesturesEnabled}
           onGestureEvent={handleGestureEvent}
@@ -429,21 +436,7 @@ export default class Card extends React.Component<Props> {
           <Animated.View
             accessibilityElementsHidden={!focused}
             importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
-            style={[
-              styles.card,
-              {
-                transform: [
-                  // Translation for the animation of the current card
-                  direction === 'vertical'
-                    ? { translateY: this.translate }
-                    : { translateX: this.translate },
-                  // Translation for the animation of the card on top of this
-                  direction === 'vertical'
-                    ? { translateY: translate }
-                    : { translateX: translate },
-                ],
-              },
-            ]}
+            style={[styles.card, cardStyle]}
           >
             {children({
               close: this.handleClose,
