@@ -7,11 +7,11 @@ export type Route = { key: string };
 export type Layout = { width: number; height: number };
 
 export type SceneProps = {
+  index: number;
   route: Route;
   layout: Layout;
   current: Animated.Value<number>;
   next?: Animated.Value<number>;
-  isFirst: boolean;
 };
 
 type Props = {
@@ -52,11 +52,11 @@ export default class Stack extends React.Component<Props, State> {
       <View style={styles.container} onLayout={this.handleLayout}>
         {routes.map((route, index) =>
           renderScene({
+            index,
             route,
             layout,
             current: progress[index],
             next: progress[index + 1],
-            isFirst: index === 0,
           })
         )}
       </View>

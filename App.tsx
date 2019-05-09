@@ -12,6 +12,8 @@ export default class App extends React.Component<{}, State> {
     routes: [{ key: '0' }],
   };
 
+  private key = 1;
+
   private renderScene = ({ route, ...rest }: SceneProps) => {
     return (
       <Card
@@ -26,23 +28,22 @@ export default class App extends React.Component<{}, State> {
       >
         {({ close }: { close: () => void }) => (
           <React.Fragment>
-            <Text style={styles.item}>{route.key}</Text>
+            <Text style={styles.item}>{rest.index}</Text>
             <View style={styles.item}>
               <Button
                 title="Add screen"
                 onPress={() => {
                   this.setState(state => ({
-                    routes: [
-                      ...state.routes,
-                      { key: String(state.routes.length) },
-                    ],
+                    routes: [...state.routes, { key: String(this.key++) }],
                   }));
                 }}
               />
             </View>
-            <View style={styles.item}>
-              <Button title="Go back" onPress={close} />
-            </View>
+            {rest.index !== 0 ? (
+              <View style={styles.item}>
+                <Button title="Go back" onPress={close} />
+              </View>
+            ) : null}
           </React.Fragment>
         )}
       </Card>

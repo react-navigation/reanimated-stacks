@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { View, StyleSheet, BackHandler, StyleProp, ViewStyle } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  BackHandler,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
@@ -7,10 +13,11 @@ import {
 } from 'react-native-gesture-handler';
 
 type Props = {
-  direction: 'horizontal' | 'vertical';
+  index: number;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
   layout: { width: number; height: number };
+  direction: 'horizontal' | 'vertical';
   springConfig?: {
     damping?: number;
     mass?: number;
@@ -18,7 +25,6 @@ type Props = {
     restSpeedThreshold?: number;
     restDisplacementThreshold?: number;
   };
-  isFirst?: boolean;
   gesturesEnabled: boolean;
   onOpen?: () => void;
   onClose?: () => void;
@@ -88,22 +94,8 @@ export default class Card extends React.Component<Props> {
     BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
   }
 
-  private handleBackPress = () => {
-    if (this.isVisibleValue && !this.props.isFirst) {
-      this.nextIsVisible.setValue(FALSE);
-
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  private handleClose = () => {
-    this.props.isFirst || this.nextIsVisible.setValue(FALSE);
-  };
-
   componentDidUpdate(prevProps: Props) {
-    const { layout, direction, isFirst, springConfig } = this.props;
+    const { layout, direction, index, springConfig } = this.props;
     const { width, height } = layout;
 
     if (width !== prevProps.layout.width) {
@@ -120,8 +112,8 @@ export default class Card extends React.Component<Props> {
       );
     }
 
-    if (isFirst !== prevProps.isFirst) {
-      this.isAnimated.setValue(isFirst ? FALSE : TRUE);
+    if (index !== prevProps.index) {
+      this.isAnimated.setValue(this.isFirst() ? FALSE : TRUE);
     }
 
     if (springConfig !== prevProps.springConfig) {
@@ -160,7 +152,7 @@ export default class Card extends React.Component<Props> {
   private isOpen: boolean | undefined;
   private isVisibleValue = TRUE;
 
-  private isAnimated = new Value<Binary>(this.props.isFirst ? FALSE : TRUE);
+  private isAnimated = new Value<Binary>(this.props.index === 0 ? FALSE : TRUE);
   private isVisible = new Value<Binary>(TRUE);
   private nextIsVisible = new Value<Binary | -1>(UNSET);
 
@@ -384,13 +376,28 @@ export default class Card extends React.Component<Props> {
     },
   ]);
 
+  private isFirst = () => this.props.index === 0;
+
+  private handleBackPress = () => {
+    if (this.isVisibleValue && !this.props.index) {
+      this.nextIsVisible.setValue(FALSE);
+
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  private handleClose = () => {
+    this.isFirst() || this.nextIsVisible.setValue(FALSE);
+  };
+
   render() {
     const {
       layout,
       current,
       next,
       direction,
-      isFirst,
       gesturesEnabled,
       style,
       children,
@@ -417,7 +424,7 @@ export default class Card extends React.Component<Props> {
           style={[styles.overlay, { opacity: current }]}
         />
         <PanGestureHandler
-          enabled={layout.width !== 0 && !isFirst && gesturesEnabled}
+          enabled={layout.width !== 0 && !this.isFirst() && gesturesEnabled}
           onGestureEvent={handleGestureEvent}
           onHandlerStateChange={handleGestureEvent}
         >
