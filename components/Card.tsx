@@ -33,6 +33,8 @@ const FALSE = 0;
 const NOOP = 0;
 const UNSET = -1;
 
+const PROGRESS_EPSILON = 0.05;
+
 const DIRECTION_VERTICAL = -1;
 const DIRECTION_HORIZONTAL = 1;
 
@@ -157,7 +159,7 @@ export default class Card extends React.Component<Props> {
     }
   }
 
-  private isOpen = false;
+  private isOpen: boolean | undefined;
   private isVisibleValue = TRUE;
 
   private isAnimated = new Value<Binary>(this.props.isFirst ? FALSE : TRUE);
@@ -410,7 +412,11 @@ export default class Card extends React.Component<Props> {
 
     return (
       <React.Fragment>
-        <Animated.View style={[styles.overlay, { opacity: current }]} />
+        <Animated.View
+          // By making the overlay click-through, the user can quickly swipe away multiple cards
+          pointerEvents="none"
+          style={[styles.overlay, { opacity: current }]}
+        />
         <PanGestureHandler
           enabled={layout.width !== 0 && !isFirst && gesturesEnabled}
           onGestureEvent={handleGestureEvent}
