@@ -9,12 +9,22 @@ import { Screen } from 'react-native-screens';
 import { InterpolatorProps, InterpolatedStyle } from '../CardStyleInterpolator';
 
 type SpringConfig = {
-  damping?: number;
-  mass?: number;
-  stiffness?: number;
-  restSpeedThreshold?: number;
-  restDisplacementThreshold?: number;
+  damping: number;
+  mass: number;
+  stiffness: number;
+  restSpeedThreshold: number;
+  restDisplacementThreshold: number;
+  overshootClamping: boolean;
 };
+
+type TimingConfig = {
+  duration: number;
+  easing: Animated.EasingFunction;
+};
+
+type TransitionSpec =
+  | { timing: 'spring'; config: SpringConfig }
+  | { timing: 'timing'; config: TimingConfig };
 
 type Props = {
   index: number;
@@ -24,11 +34,11 @@ type Props = {
   current: Animated.Value<number>;
   layout: { width: number; height: number };
   direction: 'horizontal' | 'vertical';
-  springConfig?: SpringConfig;
-  gesturesEnabled: boolean;
   onOpen?: () => void;
   onClose?: () => void;
   children: (props: { close: () => void }) => React.ReactNode;
+  gesturesEnabled: boolean;
+  transitionSpec: TransitionSpec;
   styleInterpolator: (props: InterpolatorProps) => InterpolatedStyle;
 };
 
@@ -69,6 +79,7 @@ const {
   Clock,
   call,
   spring,
+  timing,
   interpolate,
 } = Animated;
 
@@ -84,6 +95,10 @@ const SPRING_CONFIG = {
 export default class Card extends React.Component<Props> {
   static defaultProps = {
     direction: 'horizontal',
+    transitionSpec: {
+      timing: 'spring',
+      config: SPRING_CONFIG,
+    },
     gesturesEnabled: true,
   };
 
@@ -96,7 +111,7 @@ export default class Card extends React.Component<Props> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { layout, direction, springConfig } = this.props;
+    const { layout, direction, transitionSpec } = this.props;
     const { width, height } = layout;
 
     if (width !== prevProps.layout.width) {
@@ -113,8 +128,8 @@ export default class Card extends React.Component<Props> {
       );
     }
 
-    if (springConfig !== prevProps.springConfig) {
-      this.runTransition = this.createTransition({ springConfig });
+    if (transitionSpec !== prevProps.transitionSpec) {
+      this.runTransition = this.createTransition(transitionSpec);
     }
   }
 
@@ -158,37 +173,41 @@ export default class Card extends React.Component<Props> {
   private isSwiping = new Value(FALSE);
   private isSwipeGesture = new Value(FALSE);
 
-  private createTransition = ({
-    springConfig,
-  }: {
-    springConfig: SpringConfig;
-  }) => (isVisible: Binary | Animated.Node<number>) => {
-    const toValue = new Value(0);
-    const frameTime = new Value(0);
+  private toValue = new Value(0);
+  private frameTime = new Value(0);
 
-    const state = {
-      position: this.position,
-      time: new Value(0),
-      finished: new Value(FALSE),
-    };
+  private transitionState = {
+    position: this.position,
+    time: new Value(0),
+    finished: new Value(FALSE),
+  };
 
+  private createTransition = (transitionSpec: TransitionSpec) => (
+    isVisible: Binary | Animated.Node<number>
+  ) => {
     return block([
       cond(clockRunning(this.clock), NOOP, [
         // Animation wasn't running before
         // Set the initial values and start the clock
-        set(toValue, cond(isVisible, 0, this.distance)),
-        set(frameTime, 0),
-        set(state.time, 0),
-        set(state.finished, FALSE),
+        set(this.toValue, cond(isVisible, 0, this.distance)),
+        set(this.frameTime, 0),
+        set(this.transitionState.time, 0),
+        set(this.transitionState.finished, FALSE),
         set(this.isVisible, isVisible),
         startClock(this.clock),
       ]),
-      spring(
-        this.clock,
-        { ...state, velocity: this.velocity },
-        { ...SPRING_CONFIG, ...springConfig, toValue }
-      ),
-      cond(state.finished, [
+      transitionSpec.timing === 'spring'
+        ? spring(
+            this.clock,
+            { ...this.transitionState, velocity: this.velocity },
+            { ...transitionSpec.config, toValue: this.toValue }
+          )
+        : timing(
+            this.clock,
+            { ...this.transitionState, frameTime: this.frameTime },
+            { ...transitionSpec.config, toValue: this.toValue }
+          ),
+      cond(this.transitionState.finished, [
         // Reset values
         set(this.isSwipeGesture, FALSE),
         set(this.gesture, 0),
@@ -213,9 +232,7 @@ export default class Card extends React.Component<Props> {
     ]);
   };
 
-  private runTransition = this.createTransition({
-    springConfig: this.props.springConfig,
-  });
+  private runTransition = this.createTransition(this.props.transitionSpec);
 
   private translate = block([
     onChange(

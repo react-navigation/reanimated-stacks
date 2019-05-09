@@ -11,10 +11,10 @@ type State = {
 
 export default class App extends React.Component<{}, State> {
   state = {
-    routes: [{ key: '0' }],
+    routes: [{ key: '0' }, { key: '1' }],
   };
 
-  private key = 1;
+  private key = 2;
 
   private renderScene = ({ route, ...rest }: SceneProps) => {
     return (
