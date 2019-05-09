@@ -7,6 +7,7 @@ export type Route = { key: string };
 export type Layout = { width: number; height: number };
 
 export type SceneProps = {
+  focused: boolean;
   index: number;
   route: Route;
   layout: Layout;
@@ -50,8 +51,9 @@ export default class Stack extends React.Component<Props, State> {
 
     return (
       <View style={styles.container} onLayout={this.handleLayout}>
-        {routes.map((route, index) =>
+        {routes.map((route, index, self) =>
           renderScene({
+            focused: index === self.length - 1,
             index,
             route,
             layout,

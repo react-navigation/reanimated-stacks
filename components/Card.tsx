@@ -14,6 +14,7 @@ import {
 
 type Props = {
   index: number;
+  focused: boolean;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
   layout: { width: number; height: number };
@@ -112,10 +113,6 @@ export default class Card extends React.Component<Props> {
       );
     }
 
-    if (index !== prevProps.index) {
-      this.isAnimated.setValue(this.isFirst() ? FALSE : TRUE);
-    }
-
     if (springConfig !== prevProps.springConfig) {
       this.springConfig.damping.setValue(
         springConfig && springConfig.damping !== undefined
@@ -152,7 +149,6 @@ export default class Card extends React.Component<Props> {
   private isOpen: boolean | undefined;
   private isVisibleValue = TRUE;
 
-  private isAnimated = new Value<Binary>(this.props.index === 0 ? FALSE : TRUE);
   private isVisible = new Value<Binary>(TRUE);
   private nextIsVisible = new Value<Binary | -1>(UNSET);
 
@@ -317,8 +313,6 @@ export default class Card extends React.Component<Props> {
       ],
       [
         set(this.isSwiping, FALSE),
-        cond(
-          this.isAnimated,
           this.transitionTo(
             cond(
               or(
@@ -349,8 +343,6 @@ export default class Card extends React.Component<Props> {
               this.isVisible
             )
           ),
-          set(this.position, cond(this.isVisible, 0, this.distance))
-        ),
       ]
     ),
     this.position,
@@ -379,7 +371,7 @@ export default class Card extends React.Component<Props> {
   private isFirst = () => this.props.index === 0;
 
   private handleBackPress = () => {
-    if (this.isVisibleValue && !this.props.index) {
+    if (this.isVisibleValue && !this.isFirst()) {
       this.nextIsVisible.setValue(FALSE);
 
       return true;
@@ -394,6 +386,7 @@ export default class Card extends React.Component<Props> {
 
   render() {
     const {
+      focused,
       layout,
       current,
       next,
@@ -406,9 +399,14 @@ export default class Card extends React.Component<Props> {
     const translate = next
       ? interpolate(next, {
           inputRange: [0, 1],
-          outputRange: [0, -80],
+          outputRange: [0, layout.width * -0.3],
         })
       : 0;
+
+    const opacity = interpolate(current, {
+      inputRange: [0, 1],
+      outputRange: [0, 0.07],
+    });
 
     const handleGestureEvent =
       direction === 'vertical'
@@ -421,7 +419,7 @@ export default class Card extends React.Component<Props> {
         <Animated.View
           // By making the overlay click-through, the user can quickly swipe away multiple cards
           pointerEvents="none"
-          style={[styles.overlay, { opacity: current }]}
+          style={[styles.overlay, { opacity }]}
         />
         <PanGestureHandler
           enabled={layout.width !== 0 && !this.isFirst() && gesturesEnabled}
@@ -429,6 +427,8 @@ export default class Card extends React.Component<Props> {
           onHandlerStateChange={handleGestureEvent}
         >
           <Animated.View
+            accessibilityElementsHidden={!focused}
+            importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
             style={[
               styles.card,
               {
@@ -459,6 +459,7 @@ export default class Card extends React.Component<Props> {
 const styles = StyleSheet.create({
   card: {
     ...StyleSheet.absoluteFillObject,
+    shadowOpacity: 0.07,
     shadowOffset: { width: -1, height: 1 },
     shadowRadius: 5,
     shadowColor: '#000',
@@ -467,6 +468,6 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: '#000',
   },
 });
