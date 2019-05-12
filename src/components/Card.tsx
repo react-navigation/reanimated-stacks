@@ -22,6 +22,8 @@ type TimingConfig = {
   easing: Animated.EasingFunction;
 };
 
+const AnimatedScreen = Animated.createAnimatedComponent(Screen);
+
 type TransitionSpec =
   | { timing: 'spring'; config: SpringConfig }
   | { timing: 'timing'; config: TimingConfig };
@@ -376,18 +378,8 @@ export default class Card extends React.Component<Props> {
         : this.handleGestureEventHorizontal;
 
     return (
-      <Screen
-        // We need to wrap the screen in a non-collapsable view, otherwise the overlay doesn't show on Android
-        // The elevation shadow is also not-visible without this
-        collapsable={false}
-        // @ts-ignore
-        active={stale ? 0 : 1}
-        style={[StyleSheet.absoluteFill]}
-        pointerEvents="box-none"
-      >
-        <Animated.Code
-          exec={this.translate}
-        />
+      <React.Fragment>
+        <Animated.Code exec={this.translate} />
         {overlayStyle ? (
           <Animated.View
             pointerEvents="none"
@@ -399,17 +391,29 @@ export default class Card extends React.Component<Props> {
           onGestureEvent={handleGestureEvent}
           onHandlerStateChange={handleGestureEvent}
         >
-          <Animated.View
-            accessibilityElementsHidden={!focused}
-            importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
-            style={[styles.card, cardStyle]}
+          <AnimatedScreen
+            // We need to wrap the screen in a non-collapsable view, otherwise the overlay doesn't show on Android
+            // The elevation shadow is also not-visible without this
+            collapsable={false}
+            // @ts-ignore
+            active={stale ? 0 : 1}
+            style={[StyleSheet.absoluteFill, cardStyle]}
+            pointerEvents="box-none"
           >
-            {children({
-              close: this.handleClose,
-            })}
-          </Animated.View>
+            <Animated.View
+              accessibilityElementsHidden={!focused}
+              importantForAccessibility={
+                focused ? 'auto' : 'no-hide-descendants'
+              }
+              style={styles.card}
+            >
+              {children({
+                close: this.handleClose,
+              })}
+            </Animated.View>
+          </AnimatedScreen>
         </PanGestureHandler>
-      </Screen>
+      </React.Fragment>
     );
   }
 }
