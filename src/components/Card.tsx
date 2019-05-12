@@ -385,11 +385,8 @@ export default class Card extends React.Component<Props> {
         style={[StyleSheet.absoluteFill]}
         pointerEvents="box-none"
       >
-        <Animated.View
-          // This doesn't actually do anything, but we need to pass the animated value to native
-          // Otherwise the reanimated logic won't work, this is just a hack to make sure it's passed
-          // Usually we'd pass it to the Animated.View inside the PanGestureHandler, but we can't be sure with interpolated styles
-          style={{ height: multiply(this.translate, 0) }}
+        <Animated.Code
+          exec={this.translate}
         />
         {overlayStyle ? (
           <Animated.View
