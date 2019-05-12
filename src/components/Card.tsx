@@ -177,6 +177,7 @@ export default class Card extends React.Component<Props> {
 
   private toValue = new Value(0);
   private frameTime = new Value(0);
+  private springVelocity = new Value(0);
 
   private transitionState = {
     position: this.position,
@@ -195,13 +196,14 @@ export default class Card extends React.Component<Props> {
         set(this.frameTime, 0),
         set(this.transitionState.time, 0),
         set(this.transitionState.finished, FALSE),
+        set(this.springVelocity, this.velocity),
         set(this.isVisible, isVisible),
         startClock(this.clock),
       ]),
       transitionSpec.timing === 'spring'
         ? spring(
             this.clock,
-            { ...this.transitionState, velocity: this.velocity },
+            { ...this.transitionState, velocity: this.springVelocity },
             { ...transitionSpec.config, toValue: this.toValue }
           )
         : timing(
