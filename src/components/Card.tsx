@@ -42,6 +42,10 @@ type Props = {
   styleInterpolator: (props: InterpolatorProps) => InterpolatedStyle;
 };
 
+type State = {
+  closing: boolean;
+};
+
 type Binary = 0 | 1;
 
 const TRUE = 1;
@@ -66,9 +70,9 @@ const {
   or,
   greaterThan,
   lessThan,
+  abs,
   add,
   max,
-  abs,
   block,
   stopClock,
   startClock,
@@ -91,7 +95,7 @@ const SPRING_CONFIG = {
   restSpeedThreshold: 0.01,
 };
 
-export default class Card extends React.Component<Props> {
+export default class Card extends React.Component<Props, State> {
   static defaultProps = {
     direction: 'horizontal',
     transitionSpec: {
@@ -99,6 +103,10 @@ export default class Card extends React.Component<Props> {
       config: SPRING_CONFIG,
     },
     gesturesEnabled: true,
+  };
+
+  state: State = {
+    closing: false,
   };
 
   componentDidMount() {
@@ -109,7 +117,8 @@ export default class Card extends React.Component<Props> {
     BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
   }
 
-  componentDidUpdate(prevProps: Props) {
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    const { closing } = this.state;
     const { layout, direction, transitionSpec } = this.props;
     const { width, height } = layout;
 
@@ -130,9 +139,12 @@ export default class Card extends React.Component<Props> {
     if (transitionSpec !== prevProps.transitionSpec) {
       this.runTransition = this.createTransition(transitionSpec);
     }
+
+    if (closing !== prevState.closing) {
+      this.nextIsVisible.setValue(closing ? FALSE : TRUE);
+    }
   }
 
-  private isOpen: boolean | undefined;
   private isVisibleValue = TRUE;
 
   private isVisible = new Value<Binary>(TRUE);
@@ -184,11 +196,13 @@ export default class Card extends React.Component<Props> {
   private createTransition = (transitionSpec: TransitionSpec) => (
     isVisible: Binary | Animated.Node<number>
   ) => {
-    return block([
+    const toValue = cond(isVisible, 0, this.distance);
+
+    return cond(eq(this.position, toValue), NOOP, [
       cond(clockRunning(this.clock), NOOP, [
         // Animation wasn't running before
         // Set the initial values and start the clock
-        set(this.toValue, cond(isVisible, 0, this.distance)),
+        set(this.toValue, toValue),
         set(this.frameTime, 0),
         set(this.transitionState.time, 0),
         set(this.transitionState.finished, FALSE),
@@ -217,15 +231,11 @@ export default class Card extends React.Component<Props> {
           const isOpen = Boolean(value);
           const { onOpen, onClose } = this.props;
 
-          if (isOpen !== this.isOpen) {
-            if (isOpen) {
-              onOpen && onOpen();
-            } else {
-              onClose && onClose();
-            }
+          if (isOpen) {
+            onOpen && onOpen();
+          } else {
+            onClose && onClose();
           }
-
-          this.isOpen = isOpen;
         }),
       ]),
     ]);
@@ -338,7 +348,7 @@ export default class Card extends React.Component<Props> {
 
   private handleBackPress = () => {
     if (this.isVisibleValue && !this.isFirst()) {
-      this.nextIsVisible.setValue(FALSE);
+      this.setState({ closing: true });
 
       return true;
     } else {
@@ -347,7 +357,7 @@ export default class Card extends React.Component<Props> {
   };
 
   private handleClose = () => {
-    this.isFirst() || this.nextIsVisible.setValue(FALSE);
+    this.isFirst() || this.setState({ closing: true });
   };
 
   render() {
@@ -367,6 +377,7 @@ export default class Card extends React.Component<Props> {
       current,
       next,
       layout,
+      closing: this.state.closing,
     });
 
     const handleGestureEvent =

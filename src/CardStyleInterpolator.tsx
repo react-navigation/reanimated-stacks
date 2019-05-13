@@ -4,6 +4,7 @@ export type InterpolatorProps = {
   current: Animated.Node<number>;
   next?: Animated.Node<number>;
   layout: { width: number; height: number };
+  closing: boolean;
 };
 
 export type InterpolatedStyle = {
@@ -86,38 +87,25 @@ export function forVerticalIOS({
 export function forFadeFromBottomAndroid({
   current,
   layout,
+  closing,
 }: InterpolatorProps): InterpolatedStyle {
   const translateY = interpolate(current, {
     inputRange: [0, 1],
     outputRange: [layout.height * 0.08, 0],
   });
 
-  const opacity = interpolate(current, {
-    inputRange: [0, 0.5, 0.9, 1],
-    outputRange: [0, 0.25, 0.7, 1],
-  });
-
-  return {
-    cardStyle: {
-      opacity,
-      transform: [{ translateY }],
-    },
-  };
-}
-
-export function forFadeToBottomAndroid({
-  current,
-  layout,
-}: InterpolatorProps): InterpolatedStyle {
-  const translateY = interpolate(current, {
-    inputRange: [0, 1],
-    outputRange: [layout.height * 0.08, 0],
-  });
-
-  const opacity = interpolate(current, {
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
+  const opacity = interpolate(
+    current,
+    closing
+      ? {
+          inputRange: [0, 1],
+          outputRange: [0, 1],
+        }
+      : {
+          inputRange: [0, 0.5, 0.9, 1],
+          outputRange: [0, 0.25, 0.7, 1],
+        }
+  );
 
   return {
     cardStyle: {
