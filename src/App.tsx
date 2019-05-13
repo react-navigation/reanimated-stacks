@@ -4,10 +4,19 @@ import { useScreens } from 'react-native-screens';
 import Stack, { SceneProps, Route } from './components/Stack';
 import Card from './components/Card';
 import { forHorizontalIOS } from './CardStyleInterpolator';
+import { Easing } from 'react-native-reanimated';
 
 type State = {
   routes: Route[];
 };
+
+const transitionSpec = {
+  timing: 'timing',
+  config: {
+    duration: 300,
+    easing: Easing.exp
+  }
+}
 
 export default class App extends React.Component<{}, State> {
   state = {
@@ -27,6 +36,7 @@ export default class App extends React.Component<{}, State> {
           }))
         }
         styleInterpolator={forHorizontalIOS}
+        transitionSpec={transitionSpec}
       >
         {({ close }: { close: () => void }) => (
           <View style={styles.scene}>
