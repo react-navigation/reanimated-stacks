@@ -57,7 +57,7 @@ export default class App extends React.Component<{}, State> {
   }
 }
 
-useScreens();
+useScreens(true);
 
 const styles = StyleSheet.create({
   item: {
