@@ -122,12 +122,16 @@ export default class Card extends React.Component<Props, State> {
     const { layout, direction, transitionSpec } = this.props;
     const { width, height } = layout;
 
-    if (width !== prevProps.layout.width) {
+    if (
+      width !== prevProps.layout.width ||
+      height !== prevProps.layout.height
+    ) {
       this.layout.width.setValue(width);
-    }
-
-    if (height !== prevProps.layout.height) {
       this.layout.height.setValue(height);
+
+      this.position = new Value(
+        direction === 'vertical' ? layout.height : layout.width
+      );
     }
 
     if (direction !== prevProps.direction) {
@@ -255,6 +259,7 @@ export default class Card extends React.Component<Props, State> {
       cond(neq(this.nextIsVisible, UNSET), [
         // Stop any running animations
         cond(clockRunning(this.clock), stopClock(this.clock)),
+        set(this.gesture, 0),
         // Update the index to trigger the transition
         set(this.isVisible, this.nextIsVisible),
         set(this.nextIsVisible, UNSET),

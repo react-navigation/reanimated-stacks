@@ -52,7 +52,11 @@ export default class Stack extends React.Component<Props, State> {
     const { layout, progress } = this.state;
 
     return (
-      <View style={styles.container} onLayout={this.handleLayout}>
+      <View
+        style={styles.container}
+        onLayout={this.handleLayout}
+        pointerEvents={layout.height && layout.width ? 'auto' : 'none'}
+      >
         {routes.map((route, index, self) => {
           const focused = index === self.length - 1;
 
