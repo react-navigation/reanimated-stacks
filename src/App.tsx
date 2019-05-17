@@ -5,18 +5,20 @@ import Stack, { SceneProps, Route } from './components/Stack';
 import Card from './components/Card';
 import { SlideFromRightIOS } from './TransitionConfigs/TransitionPresets';
 
+type CustomRoute = Route & { initial?: boolean };
+
 type State = {
-  routes: Route[];
+  routes: CustomRoute[];
 };
 
 export default class App extends React.Component<{}, State> {
   state = {
-    routes: [{ key: '0' }, { key: '1' }],
+    routes: [{ key: '0', initial: true }, { key: '1', initial: true }],
   };
 
   private key = 2;
 
-  private renderScene = ({ route, ...rest }: SceneProps) => {
+  private renderScene = ({ route, ...rest }: SceneProps<CustomRoute>) => {
     return (
       <Card
         {...rest}
@@ -26,6 +28,7 @@ export default class App extends React.Component<{}, State> {
             routes: state.routes.filter(r => r !== route),
           }))
         }
+        animationsEnabled={!route.initial}
         {...SlideFromRightIOS}
       >
         {({ close }: { close: () => void }) => (

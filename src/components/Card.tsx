@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, BackHandler, Platform } from 'react-native';
+import { StyleSheet, BackHandler } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
@@ -25,6 +25,7 @@ type Props = {
   onOpen?: () => void;
   onClose?: () => void;
   children: (props: { close: () => void }) => React.ReactNode;
+  animationsEnabled: boolean;
   gesturesEnabled: boolean;
   transitionSpec: (props: { closing: boolean }) => TransitionSpec;
   styleInterpolator: (props: InterpolationProps) => InterpolatedStyle;
@@ -76,6 +77,7 @@ const {
 
 export default class Card extends React.Component<Props, State> {
   static defaultProps = {
+    animationsEnabled: true,
     gesturesEnabled: true,
   };
 
@@ -93,7 +95,7 @@ export default class Card extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props, prevState: State) {
     const { closing } = this.state;
-    const { layout, direction } = this.props;
+    const { layout, direction, animationsEnabled } = this.props;
     const { width, height } = layout;
 
     if (
@@ -103,8 +105,12 @@ export default class Card extends React.Component<Props, State> {
       this.layout.width.setValue(width);
       this.layout.height.setValue(height);
 
-      this.position = new Value(
-        direction === 'vertical' ? layout.height : layout.width
+      this.position.setValue(
+        animationsEnabled
+          ? direction === 'vertical'
+            ? layout.height
+            : layout.width
+          : 0
       );
     }
 
@@ -144,9 +150,11 @@ export default class Card extends React.Component<Props, State> {
   );
 
   private position = new Value(
-    this.props.direction === 'vertical'
-      ? this.props.layout.height
-      : this.props.layout.width
+    this.props.animationsEnabled
+      ? this.props.direction === 'vertical'
+        ? this.props.layout.height
+        : this.props.layout.width
+      : 0
   );
 
   private gesture = new Value(0);
@@ -354,7 +362,7 @@ export default class Card extends React.Component<Props, State> {
     (
       styleInterpolator: (props: InterpolationProps) => InterpolatedStyle,
       current: Animated.Node<number>,
-      next: Animated.Node<number>,
+      next: Animated.Node<number> | undefined,
       layout: Layout,
       closing: boolean
     ) =>

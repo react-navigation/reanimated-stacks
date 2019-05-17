@@ -6,19 +6,19 @@ export type Route = { key: string };
 
 export type Layout = { width: number; height: number };
 
-export type SceneProps = {
+export type SceneProps<T> = {
   focused: boolean;
   stale: boolean;
   index: number;
-  route: Route;
+  route: T;
   layout: Layout;
   current: Animated.Value<number>;
   next?: Animated.Value<number>;
 };
 
-type Props = {
-  routes: Route[];
-  renderScene: (props: SceneProps) => React.ReactNode;
+type Props<T extends Route> = {
+  routes: T[];
+  renderScene: (props: SceneProps<T>) => React.ReactNode;
 };
 
 type State = {
@@ -26,8 +26,8 @@ type State = {
   layout: Layout;
 };
 
-export default class Stack extends React.Component<Props, State> {
-  static getDerivedStateFromProps(props: Props, state: State) {
+export default class Stack<T extends Route> extends React.Component<Props<T>, State> {
+  static getDerivedStateFromProps(props: Props<Route>, state: State) {
     return {
       progress: props.routes.map(
         (_, i, self) =>
