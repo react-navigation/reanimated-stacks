@@ -3,7 +3,7 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { useScreens } from 'react-native-screens';
 import Stack, { SceneProps, Route } from './components/Stack';
 import Card from './components/Card';
-import { forHorizontalIOS } from './CardStyleInterpolator';
+import { SlideFromRightIOS } from './TransitionConfigs/TransitionPresets';
 
 type State = {
   routes: Route[];
@@ -26,7 +26,7 @@ export default class App extends React.Component<{}, State> {
             routes: state.routes.filter(r => r !== route),
           }))
         }
-        styleInterpolator={forHorizontalIOS}
+        {...SlideFromRightIOS}
       >
         {({ close }: { close: () => void }) => (
           <View style={styles.scene}>

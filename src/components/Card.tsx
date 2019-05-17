@@ -1,30 +1,18 @@
 import * as React from 'react';
-import { StyleSheet, BackHandler } from 'react-native';
+import { StyleSheet, BackHandler, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
   State as GestureState,
 } from 'react-native-gesture-handler';
 import { Screen } from 'react-native-screens';
-import { InterpolatorProps, InterpolatedStyle } from '../CardStyleInterpolator';
-
-type SpringConfig = {
-  damping: number;
-  mass: number;
-  stiffness: number;
-  restSpeedThreshold: number;
-  restDisplacementThreshold: number;
-  overshootClamping: boolean;
-};
-
-type TimingConfig = {
-  duration: number;
-  easing: Animated.EasingFunction;
-};
-
-type TransitionSpec =
-  | { timing: 'spring'; config: SpringConfig }
-  | { timing: 'timing'; config: TimingConfig };
+import {
+  InterpolationProps,
+  InterpolatedStyle,
+  TransitionSpec,
+} from '../types';
+import memoize from '../utils/memoize';
+import { Layout } from './Stack';
 
 type Props = {
   index: number;
@@ -38,8 +26,8 @@ type Props = {
   onClose?: () => void;
   children: (props: { close: () => void }) => React.ReactNode;
   gesturesEnabled: boolean;
-  transitionSpec: TransitionSpec;
-  styleInterpolator: (props: InterpolatorProps) => InterpolatedStyle;
+  transitionSpec: (props: { closing: boolean }) => TransitionSpec;
+  styleInterpolator: (props: InterpolationProps) => InterpolatedStyle;
 };
 
 type State = {
@@ -86,22 +74,8 @@ const {
   interpolate,
 } = Animated;
 
-const SPRING_CONFIG = {
-  stiffness: 1000,
-  damping: 500,
-  mass: 3,
-  overshootClamping: true,
-  restDisplacementThreshold: 0.01,
-  restSpeedThreshold: 0.01,
-};
-
 export default class Card extends React.Component<Props, State> {
   static defaultProps = {
-    direction: 'horizontal',
-    transitionSpec: {
-      timing: 'spring',
-      config: SPRING_CONFIG,
-    },
     gesturesEnabled: true,
   };
 
@@ -119,7 +93,7 @@ export default class Card extends React.Component<Props, State> {
 
   componentDidUpdate(prevProps: Props, prevState: State) {
     const { closing } = this.state;
-    const { layout, direction, transitionSpec } = this.props;
+    const { layout, direction } = this.props;
     const { width, height } = layout;
 
     if (
@@ -138,10 +112,6 @@ export default class Card extends React.Component<Props, State> {
       this.direction.setValue(
         direction === 'vertical' ? DIRECTION_VERTICAL : DIRECTION_HORIZONTAL
       );
-    }
-
-    if (transitionSpec !== prevProps.transitionSpec) {
-      this.runTransition = this.createTransition(transitionSpec);
     }
 
     if (closing !== prevState.closing) {
@@ -197,9 +167,12 @@ export default class Card extends React.Component<Props, State> {
     finished: new Value(FALSE),
   };
 
-  private createTransition = (transitionSpec: TransitionSpec) => (
-    isVisible: Binary | Animated.Node<number>
-  ) => {
+  private runTransition = (isVisible: Binary | Animated.Node<number>) => {
+    const { transitionSpec } = this.props;
+
+    const openingSpec = transitionSpec({ closing: false });
+    const closingSpec = transitionSpec({ closing: true });
+
     const toValue = cond(isVisible, 0, this.distance);
 
     return cond(eq(this.position, toValue), NOOP, [
@@ -213,17 +186,31 @@ export default class Card extends React.Component<Props, State> {
         set(this.isVisible, isVisible),
         startClock(this.clock),
       ]),
-      transitionSpec.timing === 'spring'
-        ? spring(
-            this.clock,
-            { ...this.transitionState, velocity: this.velocity },
-            { ...transitionSpec.config, toValue: this.toValue }
-          )
-        : timing(
-            this.clock,
-            { ...this.transitionState, frameTime: this.frameTime },
-            { ...transitionSpec.config, toValue: this.toValue }
-          ),
+      cond(
+        eq(toValue, 0),
+        openingSpec.timing === 'spring'
+          ? spring(
+              this.clock,
+              { ...this.transitionState, velocity: this.velocity },
+              { ...openingSpec.config, toValue: this.toValue }
+            )
+          : timing(
+              this.clock,
+              { ...this.transitionState, frameTime: this.frameTime },
+              { ...openingSpec.config, toValue: this.toValue }
+            ),
+        closingSpec.timing === 'spring'
+          ? spring(
+              this.clock,
+              { ...this.transitionState, velocity: this.velocity },
+              { ...closingSpec.config, toValue: this.toValue }
+            )
+          : timing(
+              this.clock,
+              { ...this.transitionState, frameTime: this.frameTime },
+              { ...closingSpec.config, toValue: this.toValue }
+            )
+      ),
       cond(this.transitionState.finished, [
         // Reset values
         set(this.isSwipeGesture, FALSE),
@@ -244,8 +231,6 @@ export default class Card extends React.Component<Props, State> {
       ]),
     ]);
   };
-
-  private runTransition = this.createTransition(this.props.transitionSpec);
 
   private translate = block([
     onChange(
@@ -365,6 +350,22 @@ export default class Card extends React.Component<Props, State> {
     this.isFirst() || this.setState({ closing: true });
   };
 
+  private getInterpolatedStyles = memoize(
+    (
+      styleInterpolator: (props: InterpolationProps) => InterpolatedStyle,
+      current: Animated.Node<number>,
+      next: Animated.Node<number>,
+      layout: Layout,
+      closing: boolean
+    ) =>
+      styleInterpolator({
+        current,
+        next,
+        layout,
+        closing,
+      })
+  );
+
   render() {
     const {
       focused,
@@ -377,13 +378,15 @@ export default class Card extends React.Component<Props, State> {
       children,
       styleInterpolator,
     } = this.props;
+    const { closing } = this.state;
 
-    const { cardStyle, overlayStyle } = styleInterpolator({
+    const { cardStyle, overlayStyle } = this.getInterpolatedStyles(
+      styleInterpolator,
       current,
       next,
       layout,
-      closing: this.state.closing,
-    });
+      closing
+    );
 
     const handleGestureEvent =
       direction === 'vertical'

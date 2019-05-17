@@ -1,16 +1,5 @@
 import Animated from 'react-native-reanimated';
-
-export type InterpolatorProps = {
-  current: Animated.Node<number>;
-  next?: Animated.Node<number>;
-  layout: { width: number; height: number };
-  closing: boolean;
-};
-
-export type InterpolatedStyle = {
-  cardStyle?: any;
-  overlayStyle?: any;
-};
+import { InterpolationProps, InterpolatedStyle } from '../types';
 
 const { interpolate } = Animated;
 
@@ -21,7 +10,7 @@ export function forHorizontalIOS({
   current,
   next,
   layout,
-}: InterpolatorProps): InterpolatedStyle {
+}: InterpolationProps): InterpolatedStyle {
   const translateFocused = interpolate(current, {
     inputRange: [0, 1],
     outputRange: [layout.width, 0],
@@ -45,6 +34,7 @@ export function forHorizontalIOS({
 
   return {
     cardStyle: {
+      backgroundColor: '#eee',
       transform: [
         // Translation for the animation of the current card
         { translateX: translateFocused },
@@ -65,7 +55,7 @@ export function forHorizontalIOS({
 export function forVerticalIOS({
   current,
   layout,
-}: InterpolatorProps): InterpolatedStyle {
+}: InterpolationProps): InterpolatedStyle {
   const translateY = interpolate(current, {
     inputRange: [0, 1],
     outputRange: [layout.height, 0],
@@ -73,6 +63,7 @@ export function forVerticalIOS({
 
   return {
     cardStyle: {
+      backgroundColor: '#eee',
       transform: [
         // Translation for the animation of the current card
         { translateY },
@@ -88,24 +79,18 @@ export function forFadeFromBottomAndroid({
   current,
   layout,
   closing,
-}: InterpolatorProps): InterpolatedStyle {
+}: InterpolationProps): InterpolatedStyle {
   const translateY = interpolate(current, {
     inputRange: [0, 1],
     outputRange: [layout.height * 0.08, 0],
   });
 
-  const opacity = interpolate(
-    current,
-    closing
-      ? {
-          inputRange: [0, 1],
-          outputRange: [0, 1],
-        }
-      : {
-          inputRange: [0, 0.5, 0.9, 1],
-          outputRange: [0, 0.25, 0.7, 1],
-        }
-  );
+  const opacity = closing
+    ? current
+    : interpolate(current, {
+        inputRange: [0, 0.5, 0.9, 1],
+        outputRange: [0, 0.25, 0.7, 1],
+      });
 
   return {
     cardStyle: {
@@ -113,24 +98,4 @@ export function forFadeFromBottomAndroid({
       transform: [{ translateY }],
     },
   };
-}
-
-/**
- * Simple fadeIn and fadeOut
- */
-export function forFade({ current }: InterpolatorProps): InterpolatedStyle {
-  const opacity = interpolate(current, {
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
-
-  return {
-    cardStyle: {
-      opacity,
-    },
-  };
-}
-
-export function forNoAnimation(): InterpolatedStyle {
-  return {};
 }
