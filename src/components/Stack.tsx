@@ -9,7 +9,6 @@ export type Layout = { width: number; height: number };
 export type SceneProps<T> = {
   focused: boolean;
   stale: boolean;
-  first: boolean;
   route: T;
   layout: Layout;
   current: Animated.Value<number>;
@@ -25,7 +24,7 @@ type Props<T extends Route> = {
   renderScene: (props: SceneProps<T>, index: number) => React.ReactNode;
 };
 
-type State = {
+type State<T> = {
   routes: T[];
   progress: ProgressValues;
   layout: Layout;
@@ -33,9 +32,9 @@ type State = {
 
 export default class Stack<T extends Route> extends React.Component<
   Props<T>,
-  State
+  State<T>
 > {
-  static getDerivedStateFromProps(props: Props<Route>, state: State) {
+  static getDerivedStateFromProps(props: Props<Route>, state: State<Route>) {
     if (props.routes === state.routes) {
       return null;
     }
@@ -53,7 +52,7 @@ export default class Stack<T extends Route> extends React.Component<
     };
   }
 
-  state: State = {
+  state: State<T> = {
     routes: [],
     progress: {},
     layout: { width: 0, height: 0 },
@@ -78,15 +77,17 @@ export default class Stack<T extends Route> extends React.Component<
         {routes.map((route, index, self) => {
           const focused = index === self.length - 1;
 
-          return renderScene({
-            focused,
-            stale: index !== self.length - 2 && focused,
-            first: index == 0,
-            route,
-            layout,
-            current: progress[route.key],
-            next: self[index + 1] ? progress[self[index + 1].key] : undefined,
-          }, index);
+          return renderScene(
+            {
+              focused,
+              stale: index !== self.length - 2 && focused,
+              route,
+              layout,
+              current: progress[route.key],
+              next: self[index + 1] ? progress[self[index + 1].key] : undefined,
+            },
+            index
+          );
         })}
       </View>
     );

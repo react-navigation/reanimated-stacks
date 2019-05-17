@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, BackHandler } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
@@ -16,7 +16,6 @@ import memoize from '../utils/memoize';
 type Props = {
   focused: boolean;
   stale: boolean;
-  first: boolean;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
   layout: { width: number; height: number };
@@ -79,14 +78,6 @@ export default class Card extends React.Component<Props> {
     gesturesEnabled: true,
   };
 
-  componentDidMount() {
-    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
-  }
-
-  componentWillUnmount() {
-    BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
-  }
-
   componentDidUpdate(prevProps: Props) {
     const { layout, direction, animationsEnabled } = this.props;
     const { width, height } = layout;
@@ -113,8 +104,6 @@ export default class Card extends React.Component<Props> {
       );
     }
   }
-
-  private isVisibleValue = TRUE;
 
   private isVisible = new Value<Binary>(TRUE);
   private nextIsVisible = new Value<Binary | -1>(UNSET);
@@ -230,12 +219,6 @@ export default class Card extends React.Component<Props> {
 
   private translate = block([
     onChange(
-      this.isVisible,
-      call([this.isVisible], ([value]) => {
-        this.isVisibleValue = value;
-      })
-    ),
-    onChange(
       this.isClosing,
       cond(
         this.isClosing,
@@ -338,19 +321,7 @@ export default class Card extends React.Component<Props> {
     },
   ]);
 
-  private handleBackPress = () => {
-    if (this.isVisibleValue && !this.props.first) {
-      this.isClosing.setValue(TRUE);
-
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  private handleClose = () => {
-    this.props.first || this.isClosing.setValue(TRUE);
-  };
+  private handleClose = () => this.isClosing.setValue(TRUE);
 
   // We need to ensure that this style doesn't change unless absolutely needs to
   // Changing it too often will result in huge frame drops due to detaching and attaching
@@ -372,7 +343,6 @@ export default class Card extends React.Component<Props> {
   render() {
     const {
       focused,
-      first,
       stale,
       layout,
       current,
@@ -404,7 +374,7 @@ export default class Card extends React.Component<Props> {
           />
         ) : null}
         <PanGestureHandler
-          enabled={layout.width !== 0 && !first && gesturesEnabled}
+          enabled={layout.width !== 0 && gesturesEnabled}
           onGestureEvent={handleGestureEvent}
           onHandlerStateChange={handleGestureEvent}
         >

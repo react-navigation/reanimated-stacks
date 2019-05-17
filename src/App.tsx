@@ -18,7 +18,10 @@ export default class App extends React.Component<{}, State> {
 
   private key = 2;
 
-  private renderScene = ({ route, ...rest }: SceneProps<CustomRoute>, index: number) => {
+  private renderScene = (
+    { route, ...rest }: SceneProps<CustomRoute>,
+    index: number
+  ) => {
     return (
       <Card
         {...rest}
@@ -28,6 +31,7 @@ export default class App extends React.Component<{}, State> {
             routes: state.routes.filter(r => r !== route),
           }))
         }
+        gesturesEnabled={index !== 0}
         animationsEnabled={!route.initial}
         {...SlideFromRightIOS}
       >
@@ -44,11 +48,11 @@ export default class App extends React.Component<{}, State> {
                 }}
               />
             </View>
-            {rest.first ? null : (
+            {index !== 0 ? (
               <View style={styles.item}>
                 <Button title="Go back" onPress={close} />
               </View>
-            )}
+            ) : null}
           </View>
         )}
       </Card>
