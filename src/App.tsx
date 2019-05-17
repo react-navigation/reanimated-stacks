@@ -18,7 +18,7 @@ export default class App extends React.Component<{}, State> {
 
   private key = 2;
 
-  private renderScene = ({ route, ...rest }: SceneProps<CustomRoute>) => {
+  private renderScene = ({ route, ...rest }: SceneProps<CustomRoute>, index: number) => {
     return (
       <Card
         {...rest}
@@ -33,7 +33,7 @@ export default class App extends React.Component<{}, State> {
       >
         {({ close }: { close: () => void }) => (
           <View style={styles.scene}>
-            <Text style={styles.item}>{rest.index}</Text>
+            <Text style={styles.item}>{index}</Text>
             <View style={styles.item}>
               <Button
                 title="Add screen"
@@ -44,11 +44,11 @@ export default class App extends React.Component<{}, State> {
                 }}
               />
             </View>
-            {rest.index !== 0 ? (
+            {rest.first ? null : (
               <View style={styles.item}>
                 <Button title="Go back" onPress={close} />
               </View>
-            ) : null}
+            )}
           </View>
         )}
       </Card>

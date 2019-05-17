@@ -3,8 +3,11 @@ import Animated from 'react-native-reanimated';
 export type InterpolationProps = {
   current: Animated.Node<number>;
   next?: Animated.Node<number>;
-  layout: { width: number; height: number };
-  closing: boolean;
+  closing: Animated.Node<0 | 1>;
+  layout: {
+    width: Animated.Node<number>;
+    height: Animated.Node<number>;
+  };
 };
 
 export type InterpolatedStyle = {
@@ -32,6 +35,9 @@ export type TransitionSpec =
 
 export type TransitionPreset = {
   direction: 'horizontal' | 'vertical';
-  transitionSpec: (props: { closing: boolean }) => TransitionSpec;
+  transitionSpec: {
+    open: TransitionSpec;
+    close: TransitionSpec;
+  };
   styleInterpolator: (props: InterpolationProps) => InterpolatedStyle;
 };

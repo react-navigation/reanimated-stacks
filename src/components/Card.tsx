@@ -12,12 +12,11 @@ import {
   TransitionSpec,
 } from '../types';
 import memoize from '../utils/memoize';
-import { Layout } from './Stack';
 
 type Props = {
-  index: number;
   focused: boolean;
   stale: boolean;
+  first: boolean;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
   layout: { width: number; height: number };
@@ -27,12 +26,11 @@ type Props = {
   children: (props: { close: () => void }) => React.ReactNode;
   animationsEnabled: boolean;
   gesturesEnabled: boolean;
-  transitionSpec: (props: { closing: boolean }) => TransitionSpec;
+  transitionSpec: {
+    open: TransitionSpec;
+    close: TransitionSpec;
+  };
   styleInterpolator: (props: InterpolationProps) => InterpolatedStyle;
-};
-
-type State = {
-  closing: boolean;
 };
 
 type Binary = 0 | 1;
@@ -75,14 +73,10 @@ const {
   interpolate,
 } = Animated;
 
-export default class Card extends React.Component<Props, State> {
+export default class Card extends React.Component<Props> {
   static defaultProps = {
     animationsEnabled: true,
     gesturesEnabled: true,
-  };
-
-  state: State = {
-    closing: false,
   };
 
   componentDidMount() {
@@ -93,8 +87,7 @@ export default class Card extends React.Component<Props, State> {
     BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State) {
-    const { closing } = this.state;
+  componentDidUpdate(prevProps: Props) {
     const { layout, direction, animationsEnabled } = this.props;
     const { width, height } = layout;
 
@@ -119,16 +112,14 @@ export default class Card extends React.Component<Props, State> {
         direction === 'vertical' ? DIRECTION_VERTICAL : DIRECTION_HORIZONTAL
       );
     }
-
-    if (closing !== prevState.closing) {
-      this.nextIsVisible.setValue(closing ? FALSE : TRUE);
-    }
   }
 
   private isVisibleValue = TRUE;
 
   private isVisible = new Value<Binary>(TRUE);
   private nextIsVisible = new Value<Binary | -1>(UNSET);
+
+  private isClosing = new Value<Binary>(FALSE);
 
   private clock = new Clock();
 
@@ -176,10 +167,7 @@ export default class Card extends React.Component<Props, State> {
   };
 
   private runTransition = (isVisible: Binary | Animated.Node<number>) => {
-    const { transitionSpec } = this.props;
-
-    const openingSpec = transitionSpec({ closing: false });
-    const closingSpec = transitionSpec({ closing: true });
+    const { open: openingSpec, close: closingSpec } = this.props.transitionSpec;
 
     const toValue = cond(isVisible, 0, this.distance);
 
@@ -246,6 +234,14 @@ export default class Card extends React.Component<Props, State> {
       call([this.isVisible], ([value]) => {
         this.isVisibleValue = value;
       })
+    ),
+    onChange(
+      this.isClosing,
+      cond(
+        this.isClosing,
+        set(this.nextIsVisible, FALSE),
+        set(this.nextIsVisible, TRUE)
+      )
     ),
     onChange(
       this.nextIsVisible,
@@ -342,11 +338,9 @@ export default class Card extends React.Component<Props, State> {
     },
   ]);
 
-  private isFirst = () => this.props.index === 0;
-
   private handleBackPress = () => {
-    if (this.isVisibleValue && !this.isFirst()) {
-      this.setState({ closing: true });
+    if (this.isVisibleValue && !this.props.first) {
+      this.isClosing.setValue(TRUE);
 
       return true;
     } else {
@@ -355,28 +349,30 @@ export default class Card extends React.Component<Props, State> {
   };
 
   private handleClose = () => {
-    this.isFirst() || this.setState({ closing: true });
+    this.props.first || this.isClosing.setValue(TRUE);
   };
 
-  private getInterpolatedStyles = memoize(
+  // We need to ensure that this style doesn't change unless absolutely needs to
+  // Changing it too often will result in huge frame drops due to detaching and attaching
+  // Changing it during an animations can result in unexpected results
+  private getInterpolatedStyle = memoize(
     (
       styleInterpolator: (props: InterpolationProps) => InterpolatedStyle,
       current: Animated.Node<number>,
-      next: Animated.Node<number> | undefined,
-      layout: Layout,
-      closing: boolean
+      next: Animated.Node<number> | undefined
     ) =>
       styleInterpolator({
         current,
         next,
-        layout,
-        closing,
+        closing: this.isClosing,
+        layout: this.layout,
       })
   );
 
   render() {
     const {
       focused,
+      first,
       stale,
       layout,
       current,
@@ -386,14 +382,11 @@ export default class Card extends React.Component<Props, State> {
       children,
       styleInterpolator,
     } = this.props;
-    const { closing } = this.state;
 
-    const { cardStyle, overlayStyle } = this.getInterpolatedStyles(
+    const { cardStyle, overlayStyle } = this.getInterpolatedStyle(
       styleInterpolator,
       current,
-      next,
-      layout,
-      closing
+      next
     );
 
     const handleGestureEvent =
@@ -411,7 +404,7 @@ export default class Card extends React.Component<Props, State> {
           />
         ) : null}
         <PanGestureHandler
-          enabled={layout.width !== 0 && !this.isFirst() && gesturesEnabled}
+          enabled={layout.width !== 0 && !first && gesturesEnabled}
           onGestureEvent={handleGestureEvent}
           onHandlerStateChange={handleGestureEvent}
         >

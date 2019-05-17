@@ -9,35 +9,53 @@ export type Layout = { width: number; height: number };
 export type SceneProps<T> = {
   focused: boolean;
   stale: boolean;
-  index: number;
+  first: boolean;
   route: T;
   layout: Layout;
   current: Animated.Value<number>;
   next?: Animated.Value<number>;
 };
 
+type ProgressValues = {
+  [key: string]: Animated.Value<number>;
+};
+
 type Props<T extends Route> = {
   routes: T[];
-  renderScene: (props: SceneProps<T>) => React.ReactNode;
+  renderScene: (props: SceneProps<T>, index: number) => React.ReactNode;
 };
 
 type State = {
-  progress: Animated.Value<number>[];
+  routes: T[];
+  progress: ProgressValues;
   layout: Layout;
 };
 
-export default class Stack<T extends Route> extends React.Component<Props<T>, State> {
+export default class Stack<T extends Route> extends React.Component<
+  Props<T>,
+  State
+> {
   static getDerivedStateFromProps(props: Props<Route>, state: State) {
+    if (props.routes === state.routes) {
+      return null;
+    }
+
     return {
-      progress: props.routes.map(
-        (_, i, self) =>
-          state.progress[i] || new Animated.Value(i === self.length - 1 ? 0 : 1)
+      progress: props.routes.reduce(
+        (acc, curr) => {
+          acc[curr.key] = state.progress[curr.key] || new Animated.Value(0);
+
+          return acc;
+        },
+        {} as ProgressValues
       ),
+      routes: props.routes,
     };
   }
 
   state: State = {
-    progress: [],
+    routes: [],
+    progress: {},
     layout: { width: 0, height: 0 },
   };
 
@@ -63,12 +81,12 @@ export default class Stack<T extends Route> extends React.Component<Props<T>, St
           return renderScene({
             focused,
             stale: index !== self.length - 2 && focused,
-            index,
+            first: index == 0,
             route,
             layout,
-            current: progress[index],
-            next: progress[index + 1],
-          });
+            current: progress[route.key],
+            next: self[index + 1] ? progress[self[index + 1].key] : undefined,
+          }, index);
         })}
       </View>
     );
