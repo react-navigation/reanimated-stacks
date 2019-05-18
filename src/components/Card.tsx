@@ -16,13 +16,14 @@ import memoize from '../utils/memoize';
 type Props = {
   focused: boolean;
   stale: boolean;
+  closing?: boolean;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
   layout: { width: number; height: number };
   direction: 'horizontal' | 'vertical';
   onOpen?: () => void;
   onClose?: () => void;
-  children: (props: { close: () => void }) => React.ReactNode;
+  children: React.ReactNode;
   animationsEnabled: boolean;
   gesturesEnabled: boolean;
   transitionSpec: {
@@ -79,7 +80,7 @@ export default class Card extends React.Component<Props> {
   };
 
   componentDidUpdate(prevProps: Props) {
-    const { layout, direction, animationsEnabled } = this.props;
+    const { layout, direction, closing, animationsEnabled } = this.props;
     const { width, height } = layout;
 
     if (
@@ -102,6 +103,10 @@ export default class Card extends React.Component<Props> {
       this.direction.setValue(
         direction === 'vertical' ? DIRECTION_VERTICAL : DIRECTION_HORIZONTAL
       );
+    }
+
+    if (closing !== prevProps.closing) {
+      this.isClosing.setValue(closing ? TRUE : FALSE);
     }
   }
 
@@ -321,8 +326,6 @@ export default class Card extends React.Component<Props> {
     },
   ]);
 
-  private handleClose = () => this.isClosing.setValue(TRUE);
-
   // We need to ensure that this style doesn't change unless absolutely needs to
   // Changing it too often will result in huge frame drops due to detaching and attaching
   // Changing it during an animations can result in unexpected results
@@ -388,9 +391,7 @@ export default class Card extends React.Component<Props> {
               active={stale ? 0 : 1}
               style={styles.screen}
             >
-              {children({
-                close: this.handleClose,
-              })}
+              {children}
             </Screen>
           </Animated.View>
         </PanGestureHandler>
