@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { useScreens } from 'react-native-screens';
 import Stack, { SceneProps, Route } from './components/Stack';
 import Card from './components/Card';
 import { SlideFromRightIOS } from './TransitionConfigs/TransitionPresets';
@@ -27,7 +26,6 @@ export default class App extends React.Component<{}, State> {
     return (
       <Card
         {...rest}
-        key={route.key}
         closing={this.state.closing.includes(route.key)}
         onClose={() =>
           this.setState(state => ({
@@ -72,8 +70,6 @@ export default class App extends React.Component<{}, State> {
     return <Stack routes={this.state.routes} renderScene={this.renderScene} />;
   }
 }
-
-useScreens(true);
 
 const styles = StyleSheet.create({
   item: {

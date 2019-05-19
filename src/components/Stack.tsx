@@ -8,7 +8,6 @@ export type Layout = { width: number; height: number };
 
 export type SceneProps<T> = {
   focused: boolean;
-  stale: boolean;
   route: T;
   layout: Layout;
   current: Animated.Value<number>;
@@ -77,16 +76,21 @@ export default class Stack<T extends Route> extends React.Component<
         {routes.map((route, index, self) => {
           const focused = index === self.length - 1;
 
-          return renderScene(
-            {
-              focused,
-              stale: index !== self.length - 2 && focused,
-              route,
-              layout,
-              current: progress[route.key],
-              next: self[index + 1] ? progress[self[index + 1].key] : undefined,
-            },
-            index
+          return (
+            <View key={route.key} style={StyleSheet.absoluteFill}>
+              {renderScene(
+                {
+                  focused,
+                  route,
+                  layout,
+                  current: progress[route.key],
+                  next: self[index + 1]
+                    ? progress[self[index + 1].key]
+                    : undefined,
+                },
+                index
+              )}
+            </View>
           );
         })}
       </View>
@@ -97,5 +101,6 @@ export default class Stack<T extends Route> extends React.Component<
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    overflow: 'hidden',
   },
 });

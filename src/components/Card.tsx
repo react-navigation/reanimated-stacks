@@ -5,7 +5,6 @@ import {
   PanGestureHandler,
   State as GestureState,
 } from 'react-native-gesture-handler';
-import { Screen } from 'react-native-screens';
 import {
   InterpolationProps,
   InterpolatedStyle,
@@ -15,7 +14,6 @@ import memoize from '../utils/memoize';
 
 type Props = {
   focused: boolean;
-  stale: boolean;
   closing?: boolean;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
@@ -346,7 +344,6 @@ export default class Card extends React.Component<Props> {
   render() {
     const {
       focused,
-      stale,
       layout,
       current,
       next,
@@ -386,13 +383,7 @@ export default class Card extends React.Component<Props> {
             importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
             style={[styles.card, cardStyle]}
           >
-            <Screen
-              // @ts-ignore
-              active={stale ? 0 : 1}
-              style={styles.screen}
-            >
-              {children}
-            </Screen>
+            {children}
           </Animated.View>
         </PanGestureHandler>
       </React.Fragment>
@@ -407,12 +398,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowColor: '#000',
     backgroundColor: 'white',
+    overflow: 'hidden',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#000',
-  },
-  screen: {
-    flex: 1,
   },
 });
