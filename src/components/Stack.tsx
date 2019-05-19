@@ -70,7 +70,7 @@ export default class Stack<T extends Route> extends React.Component<
       <View
         style={styles.container}
         onLayout={this.handleLayout}
-        pointerEvents={layout.height && layout.width ? 'auto' : 'none'}
+        pointerEvents={layout.height && layout.width ? 'box-none' : 'none'}
       >
         {routes.map((route, index, self) => {
           const focused = index === self.length - 1;
@@ -82,6 +82,7 @@ export default class Stack<T extends Route> extends React.Component<
               importantForAccessibility={
                 focused ? 'auto' : 'no-hide-descendants'
               }
+              pointerEvents="box-none"
               style={StyleSheet.absoluteFill}
             >
               {renderScene(
