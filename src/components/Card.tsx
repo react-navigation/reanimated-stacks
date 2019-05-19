@@ -13,7 +13,6 @@ import {
 import memoize from '../utils/memoize';
 
 type Props = {
-  focused: boolean;
   closing?: boolean;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
@@ -343,7 +342,6 @@ export default class Card extends React.Component<Props> {
 
   render() {
     const {
-      focused,
       layout,
       current,
       next,
@@ -378,11 +376,7 @@ export default class Card extends React.Component<Props> {
           onGestureEvent={handleGestureEvent}
           onHandlerStateChange={handleGestureEvent}
         >
-          <Animated.View
-            accessibilityElementsHidden={!focused}
-            importantForAccessibility={focused ? 'auto' : 'no-hide-descendants'}
-            style={[styles.card, cardStyle]}
-          >
+          <Animated.View style={[styles.card, cardStyle]}>
             {children}
           </Animated.View>
         </PanGestureHandler>

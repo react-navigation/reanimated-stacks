@@ -7,7 +7,6 @@ export type Route = { key: string };
 export type Layout = { width: number; height: number };
 
 export type SceneProps<T> = {
-  focused: boolean;
   route: T;
   layout: Layout;
   current: Animated.Value<number>;
@@ -77,10 +76,16 @@ export default class Stack<T extends Route> extends React.Component<
           const focused = index === self.length - 1;
 
           return (
-            <View key={route.key} style={StyleSheet.absoluteFill}>
+            <View
+              key={route.key}
+              accessibilityElementsHidden={!focused}
+              importantForAccessibility={
+                focused ? 'auto' : 'no-hide-descendants'
+              }
+              style={StyleSheet.absoluteFill}
+            >
               {renderScene(
                 {
-                  focused,
                   route,
                   layout,
                   current: progress[route.key],
