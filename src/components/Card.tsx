@@ -392,7 +392,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowColor: '#000',
     backgroundColor: 'white',
-    overflow: 'hidden',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
