@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
@@ -363,7 +363,7 @@ export default class Card extends React.Component<Props> {
         : this.handleGestureEventHorizontal;
 
     return (
-      <React.Fragment>
+      <View style={styles.container} pointerEvents="box-none">
         <Animated.Code exec={this.translate} />
         {overlayStyle ? (
           <Animated.View
@@ -380,18 +380,22 @@ export default class Card extends React.Component<Props> {
             {children}
           </Animated.View>
         </PanGestureHandler>
-      </React.Fragment>
+      </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
   card: {
     ...StyleSheet.absoluteFillObject,
     shadowOffset: { width: -1, height: 1 },
     shadowRadius: 5,
     shadowColor: '#000',
     backgroundColor: 'white',
+    elevation: 2
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Animated from 'react-native-reanimated';
+import HeaderAndroid from './Header/HeaderSimple';
+import Card from './Card';
+import { SlideFromRightIOS } from '../TransitionConfigs/TransitionPresets';
 
 export type Route = { key: string };
 
@@ -8,9 +11,7 @@ export type Layout = { width: number; height: number };
 
 export type SceneProps<T> = {
   route: T;
-  layout: Layout;
-  current: Animated.Value<number>;
-  next?: Animated.Value<number>;
+  index: number;
 };
 
 type ProgressValues = {
@@ -19,7 +20,11 @@ type ProgressValues = {
 
 type Props<T extends Route> = {
   routes: T[];
-  renderScene: (props: SceneProps<T>, index: number) => React.ReactNode;
+  initialRoutes: string[];
+  closingRoutes: string[];
+  onGoBack: (props: { route: T }) => void;
+  onCloseRoute: (props: { route: T }) => void;
+  renderScene: (props: SceneProps<T>) => React.ReactNode;
 };
 
 type State<T> = {
@@ -63,7 +68,14 @@ export default class Stack<T extends Route> extends React.Component<
   };
 
   render() {
-    const { routes, renderScene } = this.props;
+    const {
+      routes,
+      initialRoutes,
+      closingRoutes,
+      onGoBack,
+      onCloseRoute,
+      renderScene,
+    } = this.props;
     const { layout, progress } = this.state;
 
     return (
@@ -74,6 +86,10 @@ export default class Stack<T extends Route> extends React.Component<
       >
         {routes.map((route, index, self) => {
           const focused = index === self.length - 1;
+          const current = progress[route.key];
+          const next = self[index + 1]
+            ? progress[self[index + 1].key]
+            : undefined;
 
           return (
             <View
@@ -85,17 +101,25 @@ export default class Stack<T extends Route> extends React.Component<
               pointerEvents="box-none"
               style={StyleSheet.absoluteFill}
             >
-              {renderScene(
-                {
+              <Card
+                layout={layout}
+                current={current}
+                next={next}
+                closing={closingRoutes.includes(route.key)}
+                onClose={() => onCloseRoute({ route })}
+                gesturesEnabled={index !== 0}
+                animationsEnabled={!initialRoutes.includes(route.key)}
+                {...SlideFromRightIOS}
+              >
+                <HeaderAndroid
+                  title={`Screen ${index}`}
+                  onGoBack={index !== 0 ? () => onGoBack({ route }) : undefined}
+                />
+                {renderScene({
                   route,
-                  layout,
-                  current: progress[route.key],
-                  next: self[index + 1]
-                    ? progress[self[index + 1].key]
-                    : undefined,
-                },
-                index
-              )}
+                  index,
+                })}
+              </Card>
             </View>
           );
         })}

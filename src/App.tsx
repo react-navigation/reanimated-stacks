@@ -1,73 +1,75 @@
 import * as React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import Stack, { SceneProps, Route } from './components/Stack';
-import Card from './components/Card';
-import { SlideFromRightIOS } from './TransitionConfigs/TransitionPresets';
 
 type CustomRoute = Route & { initial?: boolean };
 
 type State = {
   routes: CustomRoute[];
-  closing: string[];
+  initialRoutes: string[];
+  closingRoutes: string[];
 };
 
 export default class App extends React.Component<{}, State> {
   state: State = {
-    routes: [{ key: '0', initial: true }, { key: '1', initial: true }],
-    closing: [],
+    routes: [{ key: '0' }, { key: '1' }],
+    initialRoutes: ['0', '1'],
+    closingRoutes: [],
   };
 
   private key = 2;
 
-  private renderScene = (
-    { route, ...rest }: SceneProps<CustomRoute>,
-    index: number
-  ) => {
+  private renderScene = ({ route, index }: SceneProps<CustomRoute>) => {
     return (
-      <Card
-        {...rest}
-        closing={this.state.closing.includes(route.key)}
-        onClose={() =>
-          this.setState(state => ({
-            routes: state.routes.filter(r => r !== route),
-            closing: state.closing.filter(key => key !== route.key),
-          }))
-        }
-        gesturesEnabled={index !== 0}
-        animationsEnabled={!route.initial}
-        {...SlideFromRightIOS}
-      >
-        <View style={styles.scene}>
-          <Text style={styles.item}>{index}</Text>
+      <View style={styles.scene}>
+        <Text style={styles.item}>{index}</Text>
+        <View style={styles.item}>
+          <Button
+            title="Add screen"
+            onPress={() => {
+              this.setState(state => ({
+                routes: [...state.routes, { key: String(this.key++) }],
+              }));
+            }}
+          />
+        </View>
+        {index !== 0 ? (
           <View style={styles.item}>
             <Button
-              title="Add screen"
-              onPress={() => {
+              title="Go back"
+              onPress={() =>
                 this.setState(state => ({
-                  routes: [...state.routes, { key: String(this.key++) }],
-                }));
-              }}
+                  closingRoutes: [...state.closingRoutes, route.key],
+                }))
+              }
             />
           </View>
-          {index !== 0 ? (
-            <View style={styles.item}>
-              <Button
-                title="Go back"
-                onPress={() =>
-                  this.setState(state => ({
-                    closing: [...state.closing, route.key],
-                  }))
-                }
-              />
-            </View>
-          ) : null}
-        </View>
-      </Card>
+        ) : null}
+      </View>
     );
   };
 
   render() {
-    return <Stack routes={this.state.routes} renderScene={this.renderScene} />;
+    return (
+      <Stack
+        routes={this.state.routes}
+        initialRoutes={this.state.initialRoutes}
+        closingRoutes={this.state.closingRoutes}
+        onGoBack={({ route }) =>
+          this.setState(state => ({
+            closingRoutes: [...state.closingRoutes, route.key],
+          }))
+        }
+        onCloseRoute={({ route }) =>
+          this.setState(state => ({
+            routes: state.routes.filter(r => r !== route),
+            closingRoutes: state.closingRoutes.filter(key => key !== route.key),
+            initialRoutes: state.initialRoutes.filter(key => key !== route.key),
+          }))
+        }
+        renderScene={this.renderScene}
+      />
+    );
   }
 }
 
