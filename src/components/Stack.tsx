@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
+import { StyleSheet, LayoutChangeEvent, ViewProps } from 'react-native';
+import { Screen, ScreenContainer } from 'react-native-screens';
 import Animated from 'react-native-reanimated';
 import Card from './Card';
 import { SlideFromRightIOS } from '../TransitionConfigs/TransitionPresets';
@@ -32,6 +33,15 @@ type State<T> = {
   progress: ProgressValues;
   layout: Layout;
 };
+
+const { cond, eq } = Animated;
+
+// @ts-ignore
+const AnimatedScreen = Animated.createAnimatedComponent(
+  Screen
+) as React.ComponentType<
+  ViewProps & { active: number | Animated.Node<number> }
+>;
 
 export default class Stack<T extends Route> extends React.Component<
   Props<T>,
@@ -89,7 +99,7 @@ export default class Stack<T extends Route> extends React.Component<
           }))}
           onGoBack={onGoBack}
         />
-        <View
+        <ScreenContainer
           style={styles.container}
           onLayout={this.handleLayout}
           pointerEvents={layout.height && layout.width ? 'box-none' : 'none'}
@@ -102,8 +112,14 @@ export default class Stack<T extends Route> extends React.Component<
               : undefined;
 
             return (
-              <View
+              <AnimatedScreen
                 key={route.key}
+                active={
+                  // Mark focused screen to be always active
+                  // Mark unfocused screen as active if the next screen is currently transitioning
+                  // Coz the screen will be visible underneath next screen when it's transitioning
+                  focused ? 1 : next ? cond(eq(next, 1), 0, 1) : 1
+                }
                 accessibilityElementsHidden={!focused}
                 importantForAccessibility={
                   focused ? 'auto' : 'no-hide-descendants'
@@ -126,10 +142,10 @@ export default class Stack<T extends Route> extends React.Component<
                     index,
                   })}
                 </Card>
-              </View>
+              </AnimatedScreen>
             );
           })}
-        </View>
+        </ScreenContainer>
       </React.Fragment>
     );
   }

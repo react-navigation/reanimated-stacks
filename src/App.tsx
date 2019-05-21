@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, Platform, StyleSheet } from 'react-native';
+import { useScreens } from 'react-native-screens';
 import Stack, { SceneProps, Route } from './components/Stack';
 
 type CustomRoute = Route & { initial?: boolean };
@@ -72,6 +73,8 @@ export default class App extends React.Component<{}, State> {
     );
   }
 }
+
+useScreens(true);
 
 const styles = StyleSheet.create({
   item: {
