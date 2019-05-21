@@ -2,36 +2,32 @@ import * as React from 'react';
 import {
   I18nManager,
   Image,
-  Text,
   View,
   Platform,
   StyleSheet,
   LayoutChangeEvent,
-  StyleProp,
-  TextStyle,
+  Text,
+  MaskedViewIOS,
 } from 'react-native';
-
+import Animated from 'react-native-reanimated';
 import TouchableItem from '../TouchableItem';
 
 type Props = {
   disabled?: boolean;
   onPress: () => void;
   pressColorAndroid?: string;
-  backImage?: React.ComponentType<{
-    tintColor: string;
-    title?: string | null;
-  }>;
+  backImage?: (props: { tintColor: string; title?: string }) => React.ReactNode;
   tintColor: string;
-  title?: string | null;
-  truncatedTitle?: string | null;
+  title?: string;
+  truncatedTitle?: string;
   backTitleVisible?: boolean;
   allowFontScaling?: boolean;
-  titleStyle?: StyleProp<TextStyle>;
+  titleStyle?: React.ComponentProps<typeof Text>['style'];
   width?: number;
 };
 
 type State = {
-  initialTextWidth?: number;
+  initialTitleWidth?: number;
 };
 
 class HeaderBackButton extends React.Component<Props, State> {
@@ -48,11 +44,12 @@ class HeaderBackButton extends React.Component<Props, State> {
   state: State = {};
 
   private handleTextLayout = (e: LayoutChangeEvent) => {
-    if (this.state.initialTextWidth) {
+    if (this.state.initialTitleWidth) {
       return;
     }
+
     this.setState({
-      initialTextWidth: e.nativeEvent.layout.x + e.nativeEvent.layout.width,
+      initialTitleWidth: e.nativeEvent.layout.x + e.nativeEvent.layout.width,
     });
   };
 
@@ -62,9 +59,7 @@ class HeaderBackButton extends React.Component<Props, State> {
     let title = this.getTitleText();
 
     if (backImage) {
-      const BackImage = backImage;
-
-      return <BackImage tintColor={tintColor} title={title} />;
+      return backImage({ tintColor, title });
     } else {
       return (
         <Image
@@ -83,10 +78,10 @@ class HeaderBackButton extends React.Component<Props, State> {
   private getTitleText = () => {
     const { width, title, truncatedTitle } = this.props;
 
-    let { initialTextWidth } = this.state;
+    let { initialTitleWidth: initialTextWidth } = this.state;
 
-    if (title === null) {
-      return null;
+    if (title == undefined) {
+      return undefined;
     } else if (!title) {
       return truncatedTitle;
     } else if (initialTextWidth && width && initialTextWidth > width) {
@@ -100,25 +95,53 @@ class HeaderBackButton extends React.Component<Props, State> {
     const {
       allowFontScaling,
       backTitleVisible,
+      backImage,
       titleStyle,
       tintColor,
     } = this.props;
+    const { initialTitleWidth: titleWidth } = this.state;
+
     let backTitleText = this.getTitleText();
 
-    if (!backTitleVisible || backTitleText === null) {
+    if (!backTitleVisible || backTitleText === undefined) {
       return null;
     }
 
-    return (
-      <Text
+    const title = (
+      <Animated.Text
         accessible={false}
         onLayout={this.handleTextLayout}
-        style={[styles.title, !!tintColor && { color: tintColor }, titleStyle]}
+        style={[
+          styles.title,
+          tintColor ? { color: tintColor } : null,
+          titleWidth ? { paddingRight: titleWidth } : null,
+          titleStyle,
+        ]}
         numberOfLines={1}
         allowFontScaling={!!allowFontScaling}
       >
         {this.getTitleText()}
-      </Text>
+      </Animated.Text>
+    );
+
+    if (backImage) {
+      return title;
+    }
+
+    return (
+      <MaskedViewIOS
+        maskElement={
+          <View style={styles.iconMaskContainer}>
+            <Image
+              source={require('../../assets/back-icon-mask.png')}
+              style={styles.iconMask}
+            />
+            <View style={styles.iconMaskFillerRect} />
+          </View>
+        }
+      >
+        {title}
+      </MaskedViewIOS>
     );
   }
 
@@ -173,6 +196,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
+    letterSpacing: 0.25,
     paddingRight: 10,
   },
   icon: Platform.select({
@@ -200,6 +224,24 @@ const styles = StyleSheet.create({
           marginRight: 6,
         }
       : {},
+  iconMaskContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  iconMaskFillerRect: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  iconMask: {
+    height: 21,
+    width: 13,
+    marginLeft: -14.5,
+    marginVertical: 12,
+    alignSelf: 'center',
+    resizeMode: 'contain',
+    transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
+  },
 });
 
 export default HeaderBackButton;

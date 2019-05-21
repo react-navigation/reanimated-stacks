@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  LayoutChangeEvent,
+} from 'react-native';
 import Animated from 'react-native-reanimated';
 import HeaderTitle from './HeaderTitle';
 import { Route, Layout } from '../Stack';
@@ -15,8 +21,9 @@ export type InterpolationProps = {
 export type StyleInterpolator = (
   props: InterpolationProps
 ) => {
-  leftButtonStyle: any;
-  titleStyle: any;
+  backTitleStyle?: any;
+  leftButtonStyle?: any;
+  titleStyle?: any;
 };
 
 export type HeaderAnimationPreset = {
@@ -39,9 +46,15 @@ type Props<T extends Route> = {
   style?: StyleProp<ViewStyle>;
 };
 
+type State = {
+  titleWidth?: number;
+};
+
 export default class HeaderAnimatedItem<
   T extends Route
-> extends React.Component<Props<T>> {
+> extends React.Component<Props<T>, State> {
+  state: State = {};
+
   private getInterpolatedStyle = memoize(
     (
       styleInterpolator: StyleInterpolator,
@@ -50,6 +63,9 @@ export default class HeaderAnimatedItem<
       next?: Animated.Node<number>
     ) => styleInterpolator({ current, next, layout })
   );
+
+  private handleTitleLayout = (e: LayoutChangeEvent) =>
+    this.setState({ titleWidth: e.nativeEvent.layout.width });
 
   render() {
     const {
@@ -62,7 +78,13 @@ export default class HeaderAnimatedItem<
       style,
     } = this.props;
 
-    const { titleStyle, leftButtonStyle } = this.getInterpolatedStyle(
+    const { titleWidth } = this.state;
+
+    const {
+      titleStyle,
+      leftButtonStyle,
+      backTitleStyle,
+    } = this.getInterpolatedStyle(
       preset.styleInterpolator,
       layout,
       scene.progress,
@@ -73,10 +95,18 @@ export default class HeaderAnimatedItem<
       <View style={[styles.content, style]}>
         {previous ? (
           <Animated.View style={[styles.left, leftButtonStyle]}>
-            <HeaderBackButton onPress={onGoBack} title={previous.title} />
+            <HeaderBackButton
+              onPress={onGoBack}
+              title={previous.title}
+              titleStyle={backTitleStyle}
+              width={titleWidth}
+            />
           </Animated.View>
         ) : null}
-        <HeaderTitle style={[previous ? styles.title : null, titleStyle]}>
+        <HeaderTitle
+          onLayout={this.handleTitleLayout}
+          style={[previous ? styles.title : null, titleStyle]}
+        >
           {scene.title}
         </HeaderTitle>
       </View>
