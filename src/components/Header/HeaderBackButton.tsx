@@ -41,6 +41,7 @@ class HeaderBackButton extends React.Component<Props, State> {
       ios: '#037aff',
       web: '#5f6368',
     }),
+    backTitleVisible: Platform.OS === 'ios',
     truncatedTitle: 'Back',
   };
 
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     width: 36,
     margin: 6,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   container: {
     alignItems: 'center',

@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { View, StyleSheet, Platform, StatusBar } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Platform,
+  StatusBar,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import HeaderBackButton from './HeaderBackButton';
 import HeaderTitle from './HeaderTitle';
 import HeaderSheet from './HeaderSheet';
@@ -7,11 +14,12 @@ import HeaderSheet from './HeaderSheet';
 type Props = {
   title: string;
   onGoBack?: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
-export default function HeaderAndroid({ title, onGoBack }: Props) {
+export default function HeaderAndroid({ title, onGoBack, style }: Props) {
   return (
-    <HeaderSheet>
+    <HeaderSheet style={style}>
       <View style={styles.content}>
         {onGoBack ? <HeaderBackButton onPress={onGoBack} /> : null}
         <HeaderTitle>{title}</HeaderTitle>

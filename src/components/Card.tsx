@@ -387,7 +387,7 @@ export default class Card extends React.Component<Props> {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   card: {
     ...StyleSheet.absoluteFillObject,
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowColor: '#000',
     backgroundColor: 'white',
-    elevation: 2
+    elevation: 2,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

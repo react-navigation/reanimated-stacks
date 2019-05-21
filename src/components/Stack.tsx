@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Animated from 'react-native-reanimated';
-import HeaderAndroid from './Header/HeaderSimple';
 import Card from './Card';
 import { SlideFromRightIOS } from '../TransitionConfigs/TransitionPresets';
+import HeaderAnimated from './Header/HeaderAnimated';
 
 export type Route = { key: string };
 
@@ -79,51 +79,58 @@ export default class Stack<T extends Route> extends React.Component<
     const { layout, progress } = this.state;
 
     return (
-      <View
-        style={styles.container}
-        onLayout={this.handleLayout}
-        pointerEvents={layout.height && layout.width ? 'box-none' : 'none'}
-      >
-        {routes.map((route, index, self) => {
-          const focused = index === self.length - 1;
-          const current = progress[route.key];
-          const next = self[index + 1]
-            ? progress[self[index + 1].key]
-            : undefined;
+      <React.Fragment>
+        <HeaderAnimated
+          layout={layout}
+          scenes={routes.map((route, i) => ({
+            route,
+            progress: progress[route.key],
+            title: `Screen ${i}`,
+          }))}
+          onGoBack={onGoBack}
+        />
+        <View
+          style={styles.container}
+          onLayout={this.handleLayout}
+          pointerEvents={layout.height && layout.width ? 'box-none' : 'none'}
+        >
+          {routes.map((route, index, self) => {
+            const focused = index === self.length - 1;
+            const current = progress[route.key];
+            const next = self[index + 1]
+              ? progress[self[index + 1].key]
+              : undefined;
 
-          return (
-            <View
-              key={route.key}
-              accessibilityElementsHidden={!focused}
-              importantForAccessibility={
-                focused ? 'auto' : 'no-hide-descendants'
-              }
-              pointerEvents="box-none"
-              style={StyleSheet.absoluteFill}
-            >
-              <Card
-                layout={layout}
-                current={current}
-                next={next}
-                closing={closingRoutes.includes(route.key)}
-                onClose={() => onCloseRoute({ route })}
-                gesturesEnabled={index !== 0}
-                animationsEnabled={!initialRoutes.includes(route.key)}
-                {...SlideFromRightIOS}
+            return (
+              <View
+                key={route.key}
+                accessibilityElementsHidden={!focused}
+                importantForAccessibility={
+                  focused ? 'auto' : 'no-hide-descendants'
+                }
+                pointerEvents="box-none"
+                style={StyleSheet.absoluteFill}
               >
-                <HeaderAndroid
-                  title={`Screen ${index}`}
-                  onGoBack={index !== 0 ? () => onGoBack({ route }) : undefined}
-                />
-                {renderScene({
-                  route,
-                  index,
-                })}
-              </Card>
-            </View>
-          );
-        })}
-      </View>
+                <Card
+                  layout={layout}
+                  current={current}
+                  next={next}
+                  closing={closingRoutes.includes(route.key)}
+                  onClose={() => onCloseRoute({ route })}
+                  gesturesEnabled={index !== 0}
+                  animationsEnabled={!initialRoutes.includes(route.key)}
+                  {...SlideFromRightIOS}
+                >
+                  {renderScene({
+                    route,
+                    index,
+                  })}
+                </Card>
+              </View>
+            );
+          })}
+        </View>
+      </React.Fragment>
     );
   }
 }

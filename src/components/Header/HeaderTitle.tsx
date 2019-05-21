@@ -1,13 +1,16 @@
 import * as React from 'react';
-import { Text, StyleSheet, Platform, StyleProp, TextStyle } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
+import Animated from 'react-native-reanimated';
 
 type Props = {
   children: string;
-  style?: StyleProp<TextStyle>;
+  style?: React.ComponentProps<typeof Animated.Text>['style'];
 };
 
 export default function HeaderTitle({ children, style }: Props) {
-  return <Text style={[styles.title, style]}>{children}</Text>;
+  return (
+    <Animated.Text style={[styles.title, style]}>{children}</Animated.Text>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -16,6 +19,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     ...Platform.select({
       ios: {
+        textAlign: 'center',
         fontSize: 17,
         fontWeight: '600',
         color: 'rgba(0, 0, 0, .9)',
