@@ -6,21 +6,10 @@ const { interpolate, add } = Animated;
 export function forUIKit({
   current,
   next,
-  layout,
+  layouts,
 }: HeaderInterpolationProps): HeaderInterpolatedStyle {
-  /**
-   * NOTE: this offset calculation is an approximation that gives us
-   * decent results in many cases, but it is ultimately a poor substitute
-   * for text measurement. See the comment on title for more information.
-   *
-   * - 70 is the width of the left button area.
-   * - 25 is the width of the left button icon (to account for label offset)
-   */
-  const buttonAreaSize = 70;
-  const buttonIconSize = 25;
-
-  const titleOffset = layout.width / 2 - buttonAreaSize + buttonIconSize;
-  const backTitleOffset = layout.width / 2 - buttonAreaSize - buttonIconSize;
+  const titleOffset =
+    (layouts.screen.width - (layouts.title ? layouts.title.width : 0)) / 2 - 28;
 
   const progress = add(current, next ? next : 0);
 
@@ -33,14 +22,14 @@ export function forUIKit({
     },
     backTitleStyle: {
       opacity: interpolate(progress, {
-        inputRange: [0.5, 1, 1.5],
-        outputRange: [0, 1, 0],
+        inputRange: [0.5, 1, 2],
+        outputRange: [0, 1, 1],
       }),
       transform: [
         {
           translateX: interpolate(progress, {
             inputRange: [0, 1, 2],
-            outputRange: [backTitleOffset, 0, -backTitleOffset],
+            outputRange: [titleOffset, 0, -titleOffset],
           }),
         },
       ],

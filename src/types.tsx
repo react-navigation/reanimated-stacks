@@ -44,7 +44,10 @@ export type CardStyleInterpolator = (
 export type HeaderInterpolationProps = {
   current: Animated.Node<number>;
   next?: Animated.Node<number>;
-  layout: Layout;
+  layouts: {
+    screen: Layout;
+    title?: Layout;
+  },
 };
 
 export type HeaderInterpolatedStyle = {

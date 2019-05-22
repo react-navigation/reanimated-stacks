@@ -6,7 +6,6 @@ import {
   Platform,
   StyleSheet,
   LayoutChangeEvent,
-  Text,
   MaskedViewIOS,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -23,8 +22,8 @@ type Props = {
   truncatedTitle?: string;
   backTitleVisible?: boolean;
   allowFontScaling?: boolean;
-  titleStyle?: React.ComponentProps<typeof Text>['style'];
-  layout?: Layout;
+  titleStyle?: React.ComponentProps<typeof Animated.Text>['style'];
+  layout: Layout;
 };
 
 type State = {
@@ -85,11 +84,7 @@ class HeaderBackButton extends React.Component<Props, State> {
       return undefined;
     } else if (!title) {
       return truncatedTitle;
-    } else if (
-      initialTitleWidth &&
-      layout &&
-      initialTitleWidth > layout.width / 3
-    ) {
+    } else if (initialTitleWidth && initialTitleWidth > layout.width / 3) {
       return truncatedTitle;
     } else {
       return title;
@@ -105,6 +100,8 @@ class HeaderBackButton extends React.Component<Props, State> {
       tintColor,
     } = this.props;
 
+    let { initialTitleWidth } = this.state;
+
     let backTitleText = this.getTitleText();
 
     if (!backTitleVisible || backTitleText === undefined) {
@@ -119,6 +116,7 @@ class HeaderBackButton extends React.Component<Props, State> {
           styles.title,
           tintColor ? { color: tintColor } : null,
           titleStyle,
+          initialTitleWidth ? { paddingRight: initialTitleWidth } : null,
         ]}
         numberOfLines={1}
         allowFontScaling={!!allowFontScaling}
@@ -184,7 +182,6 @@ class HeaderBackButton extends React.Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
     flexDirection: 'row',
   },
   disabled: {
@@ -199,11 +196,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    letterSpacing: 0.25,
+    letterSpacing: 0.35,
   },
   icon: Platform.select({
     ios: {
-      backgroundColor: 'transparent',
       height: 21,
       width: 13,
       marginLeft: 9,
@@ -216,7 +212,6 @@ const styles = StyleSheet.create({
       height: 21,
       width: 21,
       resizeMode: 'contain',
-      backgroundColor: 'transparent',
       transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
     },
   }),

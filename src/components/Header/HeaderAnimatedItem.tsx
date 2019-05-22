@@ -29,7 +29,7 @@ type Props<T extends Route> = {
 };
 
 type State = {
-  titleWidth?: number;
+  titleLayout?: Layout;
 };
 
 export default class HeaderAnimatedItem<
@@ -42,12 +42,21 @@ export default class HeaderAnimatedItem<
       styleInterpolator: HeaderStyleInterpolator,
       layout: Layout,
       current: Animated.Node<number>,
-      next?: Animated.Node<number>
-    ) => styleInterpolator({ current, next, layout })
+      next?: Animated.Node<number>,
+      titleLayout?: Layout
+    ) =>
+      styleInterpolator({
+        current,
+        next,
+        layouts: { screen: layout, title: titleLayout },
+      })
   );
 
-  private handleTitleLayout = (e: LayoutChangeEvent) =>
-    this.setState({ titleWidth: e.nativeEvent.layout.width });
+  private handleTitleLayout = (e: LayoutChangeEvent) => {
+    const { height, width } = e.nativeEvent.layout;
+
+    this.setState({ titleLayout: { height, width } });
+  };
 
   render() {
     const {
@@ -60,7 +69,7 @@ export default class HeaderAnimatedItem<
       style,
     } = this.props;
 
-    const { titleWidth } = this.state;
+    const { titleLayout } = this.state;
 
     const {
       titleStyle,
@@ -70,7 +79,8 @@ export default class HeaderAnimatedItem<
       styleInterpolator,
       layout,
       scene.progress,
-      next ? next.progress : undefined
+      next ? next.progress : undefined,
+      titleLayout
     );
 
     return (
@@ -102,7 +112,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   left: {
     position: 'absolute',
