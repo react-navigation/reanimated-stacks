@@ -24,7 +24,7 @@ type Props<T extends Route> = {
   scene: Scene<T>;
   previous?: Scene<T>;
   next?: Scene<T>;
-  styleInterpolator: HeaderStyleInterpolator,
+  styleInterpolator: HeaderStyleInterpolator;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -81,7 +81,7 @@ export default class HeaderAnimatedItem<
               onPress={onGoBack}
               title={previous.title}
               titleStyle={backTitleStyle}
-              width={titleWidth}
+              layout={layout}
             />
           </Animated.View>
         ) : null}
@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center'
   },
   left: {
     position: 'absolute',

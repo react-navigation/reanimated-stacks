@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import TouchableItem from '../TouchableItem';
+import { Layout } from '../../types';
 
 type Props = {
   disabled?: boolean;
@@ -23,7 +24,7 @@ type Props = {
   backTitleVisible?: boolean;
   allowFontScaling?: boolean;
   titleStyle?: React.ComponentProps<typeof Text>['style'];
-  width?: number;
+  layout?: Layout;
 };
 
 type State = {
@@ -76,15 +77,19 @@ class HeaderBackButton extends React.Component<Props, State> {
   }
 
   private getTitleText = () => {
-    const { width, title, truncatedTitle } = this.props;
+    const { layout, title, truncatedTitle } = this.props;
 
-    let { initialTitleWidth: initialTextWidth } = this.state;
+    let { initialTitleWidth } = this.state;
 
     if (title == undefined) {
       return undefined;
     } else if (!title) {
       return truncatedTitle;
-    } else if (initialTextWidth && width && initialTextWidth > width) {
+    } else if (
+      initialTitleWidth &&
+      layout &&
+      initialTitleWidth > layout.width / 3
+    ) {
       return truncatedTitle;
     } else {
       return title;
@@ -99,7 +104,6 @@ class HeaderBackButton extends React.Component<Props, State> {
       titleStyle,
       tintColor,
     } = this.props;
-    const { initialTitleWidth: titleWidth } = this.state;
 
     let backTitleText = this.getTitleText();
 
@@ -114,7 +118,6 @@ class HeaderBackButton extends React.Component<Props, State> {
         style={[
           styles.title,
           tintColor ? { color: tintColor } : null,
-          titleWidth ? { paddingRight: titleWidth } : null,
           titleStyle,
         ]}
         numberOfLines={1}
@@ -163,10 +166,10 @@ class HeaderBackButton extends React.Component<Props, State> {
         style={[styles.container, disabled && styles.disabled]}
         borderless
       >
-        <View style={styles.container}>
+        <React.Fragment>
           {this.renderBackImage()}
           {this.maybeRenderTitle()}
-        </View>
+        </React.Fragment>
       </TouchableItem>
     );
 
@@ -179,6 +182,11 @@ class HeaderBackButton extends React.Component<Props, State> {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+  },
   disabled: {
     opacity: 0.5,
   },
@@ -189,15 +197,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  container: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-  },
   title: {
     fontSize: 17,
     letterSpacing: 0.25,
-    paddingRight: 10,
   },
   icon: Platform.select({
     ios: {

@@ -33,7 +33,7 @@ export function forUIKit({
     },
     backTitleStyle: {
       opacity: interpolate(progress, {
-        inputRange: [0.7, 1, 1.3],
+        inputRange: [0.5, 1, 1.5],
         outputRange: [0, 1, 0],
       }),
       transform: [
