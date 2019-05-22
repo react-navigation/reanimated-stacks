@@ -126,8 +126,8 @@ export default class Stack<T extends Route> extends React.Component<
                   next={next}
                   closing={closingRoutes.includes(route.key)}
                   onClose={() => onCloseRoute({ route })}
+                  animateIn={!initialRoutes.includes(route.key)}
                   gesturesEnabled={index !== 0}
-                  animationsEnabled={!initialRoutes.includes(route.key)}
                   transitionSpec={transitionSpec}
                   styleInterpolator={cardStyleInterpolator}
                 >

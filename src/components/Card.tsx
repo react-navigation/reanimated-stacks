@@ -20,7 +20,7 @@ type Props = {
   onOpen?: () => void;
   onClose?: () => void;
   children: React.ReactNode;
-  animationsEnabled: boolean;
+  animateIn: boolean;
   gesturesEnabled: boolean;
   transitionSpec: {
     open: TransitionSpec;
@@ -71,12 +71,12 @@ const {
 
 export default class Card extends React.Component<Props> {
   static defaultProps = {
-    animationsEnabled: true,
+    animateIn: true,
     gesturesEnabled: true,
   };
 
   componentDidUpdate(prevProps: Props) {
-    const { layout, direction, closing, animationsEnabled } = this.props;
+    const { layout, direction, closing, animateIn } = this.props;
     const { width, height } = layout;
 
     if (
@@ -87,7 +87,7 @@ export default class Card extends React.Component<Props> {
       this.layout.height.setValue(height);
 
       this.position.setValue(
-        animationsEnabled
+        animateIn
           ? direction === 'vertical'
             ? layout.height
             : layout.width
@@ -131,7 +131,7 @@ export default class Card extends React.Component<Props> {
   );
 
   private position = new Value(
-    this.props.animationsEnabled
+    this.props.animateIn
       ? this.props.direction === 'vertical'
         ? this.props.layout.height
         : this.props.layout.width
