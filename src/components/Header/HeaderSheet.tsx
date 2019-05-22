@@ -1,13 +1,12 @@
 import * as React from 'react';
-import { View, StyleSheet, Platform, StyleProp, ViewStyle } from 'react-native';
+import { View, StyleSheet, Platform, ViewProps } from 'react-native';
 
-type Props = {
+type Props = ViewProps & {
   children: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
 };
 
-export default function HeaderSheet({ children, style }: Props) {
-  return <View style={[styles.container, style]}>{children}</View>;
+export default function HeaderSheet({ style, ...rest }: Props) {
+  return <View {...rest} style={[styles.container, style]} />;
 }
 
 const styles = StyleSheet.create({

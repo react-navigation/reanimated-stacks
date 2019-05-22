@@ -2,12 +2,8 @@ import * as React from 'react';
 import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Animated from 'react-native-reanimated';
 import Card from './Card';
-import { SlideFromRightIOS } from '../TransitionConfigs/TransitionPresets';
 import HeaderAnimated from './Header/HeaderAnimated';
-
-export type Route = { key: string };
-
-export type Layout = { width: number; height: number };
+import { Route, Layout, TransitionSpec, CardStyleInterpolator, HeaderStyleInterpolator } from '../types';
 
 export type SceneProps<T> = {
   route: T;
@@ -25,6 +21,13 @@ type Props<T extends Route> = {
   onGoBack: (props: { route: T }) => void;
   onCloseRoute: (props: { route: T }) => void;
   renderScene: (props: SceneProps<T>) => React.ReactNode;
+  direction: 'horizontal' | 'vertical';
+  transitionSpec: {
+    open: TransitionSpec;
+    close: TransitionSpec;
+  };
+  cardStyleInterpolator: CardStyleInterpolator;
+  headerStyleInterpolator: HeaderStyleInterpolator;
 };
 
 type State<T> = {
@@ -75,6 +78,10 @@ export default class Stack<T extends Route> extends React.Component<
       onGoBack,
       onCloseRoute,
       renderScene,
+      direction,
+      transitionSpec,
+      cardStyleInterpolator,
+      headerStyleInterpolator,
     } = this.props;
     const { layout, progress } = this.state;
 
@@ -88,6 +95,7 @@ export default class Stack<T extends Route> extends React.Component<
             title: `Screen ${i}`,
           }))}
           onGoBack={onGoBack}
+          styleInterpolator={headerStyleInterpolator}
         />
         <View
           style={styles.container}
@@ -112,6 +120,7 @@ export default class Stack<T extends Route> extends React.Component<
                 style={StyleSheet.absoluteFill}
               >
                 <Card
+                  direction={direction}
                   layout={layout}
                   current={current}
                   next={next}
@@ -119,7 +128,8 @@ export default class Stack<T extends Route> extends React.Component<
                   onClose={() => onCloseRoute({ route })}
                   gesturesEnabled={index !== 0}
                   animationsEnabled={!initialRoutes.includes(route.key)}
-                  {...SlideFromRightIOS}
+                  transitionSpec={transitionSpec}
+                  styleInterpolator={cardStyleInterpolator}
                 >
                   {renderScene({
                     route,

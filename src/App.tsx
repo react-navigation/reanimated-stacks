@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import Stack, { SceneProps, Route } from './components/Stack';
-
-type CustomRoute = Route & { initial?: boolean };
+import Stack, { SceneProps } from './components/Stack';
+import { Route } from './types';
+import { SlideFromRightIOS } from './TransitionConfigs/TransitionPresets';
 
 type State = {
-  routes: CustomRoute[];
+  routes: Route[];
   initialRoutes: string[];
   closingRoutes: string[];
 };
@@ -19,7 +19,7 @@ export default class App extends React.Component<{}, State> {
 
   private key = 2;
 
-  private renderScene = ({ route, index }: SceneProps<CustomRoute>) => {
+  private renderScene = ({ route, index }: SceneProps<Route>) => {
     return (
       <View style={styles.scene}>
         <Text style={styles.item}>{index}</Text>
@@ -68,6 +68,7 @@ export default class App extends React.Component<{}, State> {
           }))
         }
         renderScene={this.renderScene}
+        {...SlideFromRightIOS}
       />
     );
   }

@@ -2,13 +2,14 @@ import {
   forHorizontalIOS,
   forVerticalIOS,
   forFadeFromBottomAndroid,
-} from './StyleInterpolators';
-import { TransitionPreset } from '../types';
+} from './CardStyleInterpolators';
+import { forUIKit, forFade } from './HeaderStyleInterpolators';
 import {
   TransitionSpecIOS,
   FadeOutToBottomAndroidSpec,
   FadeInFromBottomAndroidSpec,
 } from './TransitionSpecs';
+import { TransitionPreset } from '../types';
 
 // Standard iOS navigation transition
 export const SlideFromRightIOS: TransitionPreset = {
@@ -17,7 +18,8 @@ export const SlideFromRightIOS: TransitionPreset = {
     open: TransitionSpecIOS,
     close: TransitionSpecIOS,
   },
-  styleInterpolator: forHorizontalIOS,
+  cardStyleInterpolator: forHorizontalIOS,
+  headerStyleInterpolator: forUIKit,
 };
 
 // Standard iOS navigation transition for modals
@@ -27,7 +29,8 @@ export const ModalSlideFromBottomIOS: TransitionPreset = {
     open: TransitionSpecIOS,
     close: TransitionSpecIOS,
   },
-  styleInterpolator: forVerticalIOS,
+  cardStyleInterpolator: forVerticalIOS,
+  headerStyleInterpolator: forFade,
 };
 
 // Standard Android navigation transition when opening or closing an Activity
@@ -35,7 +38,8 @@ export const FadeFromBottomAndroid: TransitionPreset = {
   direction: 'vertical',
   transitionSpec: {
     open: FadeInFromBottomAndroidSpec,
-    close: FadeOutToBottomAndroidSpec
+    close: FadeOutToBottomAndroidSpec,
   },
-  styleInterpolator: forFadeFromBottomAndroid,
+  cardStyleInterpolator: forFadeFromBottomAndroid,
+  headerStyleInterpolator: forFade,
 };

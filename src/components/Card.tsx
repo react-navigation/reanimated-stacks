@@ -6,9 +6,8 @@ import {
   State as GestureState,
 } from 'react-native-gesture-handler';
 import {
-  InterpolationProps,
-  InterpolatedStyle,
   TransitionSpec,
+  CardStyleInterpolator,
 } from '../types';
 import memoize from '../utils/memoize';
 
@@ -27,7 +26,7 @@ type Props = {
     open: TransitionSpec;
     close: TransitionSpec;
   };
-  styleInterpolator: (props: InterpolationProps) => InterpolatedStyle;
+  styleInterpolator: CardStyleInterpolator;
 };
 
 type Binary = 0 | 1;
@@ -328,7 +327,7 @@ export default class Card extends React.Component<Props> {
   // Changing it during an animations can result in unexpected results
   private getInterpolatedStyle = memoize(
     (
-      styleInterpolator: (props: InterpolationProps) => InterpolatedStyle,
+      styleInterpolator: CardStyleInterpolator,
       current: Animated.Node<number>,
       next: Animated.Node<number> | undefined
     ) =>

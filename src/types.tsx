@@ -1,19 +1,8 @@
 import Animated from 'react-native-reanimated';
 
-export type InterpolationProps = {
-  current: Animated.Node<number>;
-  next?: Animated.Node<number>;
-  closing: Animated.Node<0 | 1>;
-  layout: {
-    width: Animated.Node<number>;
-    height: Animated.Node<number>;
-  };
-};
+export type Route = { key: string };
 
-export type InterpolatedStyle = {
-  cardStyle?: any;
-  overlayStyle?: any;
-};
+export type Layout = { width: number; height: number };
 
 export type SpringConfig = {
   damping: number;
@@ -33,11 +22,47 @@ export type TransitionSpec =
   | { timing: 'spring'; config: SpringConfig }
   | { timing: 'timing'; config: TimingConfig };
 
+export type CardInterpolationProps = {
+  current: Animated.Node<number>;
+  next?: Animated.Node<number>;
+  closing: Animated.Node<0 | 1>;
+  layout: {
+    width: Animated.Node<number>;
+    height: Animated.Node<number>;
+  };
+};
+
+export type CardInterpolatedStyle = {
+  cardStyle?: any;
+  overlayStyle?: any;
+};
+
+export type CardStyleInterpolator = (
+  props: CardInterpolationProps
+) => CardInterpolatedStyle;
+
+export type HeaderInterpolationProps = {
+  current: Animated.Node<number>;
+  next?: Animated.Node<number>;
+  layout: Layout;
+};
+
+export type HeaderInterpolatedStyle = {
+  backTitleStyle?: any;
+  leftButtonStyle?: any;
+  titleStyle?: any;
+};
+
+export type HeaderStyleInterpolator = (
+  props: HeaderInterpolationProps
+) => HeaderInterpolatedStyle;
+
 export type TransitionPreset = {
   direction: 'horizontal' | 'vertical';
   transitionSpec: {
     open: TransitionSpec;
     close: TransitionSpec;
   };
-  styleInterpolator: (props: InterpolationProps) => InterpolatedStyle;
+  cardStyleInterpolator: CardStyleInterpolator;
+  headerStyleInterpolator: HeaderStyleInterpolator;
 };

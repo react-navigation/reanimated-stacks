@@ -1,5 +1,5 @@
 import Animated from 'react-native-reanimated';
-import { InterpolationProps, InterpolatedStyle } from '../types';
+import { CardInterpolationProps, CardInterpolatedStyle } from '../types';
 
 const { cond, multiply, interpolate } = Animated;
 
@@ -10,7 +10,7 @@ export function forHorizontalIOS({
   current,
   next,
   layout,
-}: InterpolationProps): InterpolatedStyle {
+}: CardInterpolationProps): CardInterpolatedStyle {
   const translateFocused = interpolate(current, {
     inputRange: [0, 1],
     outputRange: [layout.width, 0],
@@ -55,7 +55,7 @@ export function forHorizontalIOS({
 export function forVerticalIOS({
   current,
   layout,
-}: InterpolationProps): InterpolatedStyle {
+}: CardInterpolationProps): CardInterpolatedStyle {
   const translateY = interpolate(current, {
     inputRange: [0, 1],
     outputRange: [layout.height, 0],
@@ -79,7 +79,7 @@ export function forFadeFromBottomAndroid({
   current,
   layout,
   closing,
-}: InterpolationProps): InterpolatedStyle {
+}: CardInterpolationProps): CardInterpolatedStyle {
   const translateY = interpolate(current, {
     inputRange: [0, 1],
     outputRange: [multiply(layout.height, 0.08), 0],

@@ -8,27 +8,9 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import HeaderTitle from './HeaderTitle';
-import { Route, Layout } from '../Stack';
 import HeaderBackButton from './HeaderBackButton';
 import memoize from '../../utils/memoize';
-
-export type InterpolationProps = {
-  current: Animated.Node<number>;
-  next?: Animated.Node<number>;
-  layout: Layout;
-};
-
-export type StyleInterpolator = (
-  props: InterpolationProps
-) => {
-  backTitleStyle?: any;
-  leftButtonStyle?: any;
-  titleStyle?: any;
-};
-
-export type HeaderAnimationPreset = {
-  styleInterpolator: StyleInterpolator;
-};
+import { Route, Layout, HeaderStyleInterpolator } from '../../types';
 
 export type Scene<T extends Route> = {
   title: string;
@@ -39,10 +21,10 @@ export type Scene<T extends Route> = {
 type Props<T extends Route> = {
   layout: Layout;
   onGoBack: () => void;
-  preset: HeaderAnimationPreset;
   scene: Scene<T>;
   previous?: Scene<T>;
   next?: Scene<T>;
+  styleInterpolator: HeaderStyleInterpolator,
   style?: StyleProp<ViewStyle>;
 };
 
@@ -57,7 +39,7 @@ export default class HeaderAnimatedItem<
 
   private getInterpolatedStyle = memoize(
     (
-      styleInterpolator: StyleInterpolator,
+      styleInterpolator: HeaderStyleInterpolator,
       layout: Layout,
       current: Animated.Node<number>,
       next?: Animated.Node<number>
@@ -72,9 +54,9 @@ export default class HeaderAnimatedItem<
       scene,
       previous,
       next,
-      preset,
       layout,
       onGoBack,
+      styleInterpolator,
       style,
     } = this.props;
 
@@ -85,7 +67,7 @@ export default class HeaderAnimatedItem<
       leftButtonStyle,
       backTitleStyle,
     } = this.getInterpolatedStyle(
-      preset.styleInterpolator,
+      styleInterpolator,
       layout,
       scene.progress,
       next ? next.progress : undefined
