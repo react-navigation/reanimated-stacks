@@ -7,9 +7,9 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import HeaderBackButton from './HeaderBackButton';
-import HeaderTitle from './HeaderTitle';
 import HeaderSheet from './HeaderSheet';
+import HeaderTitle from './HeaderTitle';
+import HeaderBackButton from './HeaderBackButton';
 
 type Props = {
   title: string;
@@ -17,12 +17,13 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-export default function HeaderAndroid({ title, onGoBack, style }: Props) {
+export default function HeaderSimple({ title, onGoBack, style }: Props) {
   return (
     <HeaderSheet style={style}>
       <View style={styles.content}>
         {onGoBack ? <HeaderBackButton onPress={onGoBack} /> : null}
-        <HeaderTitle>{title}</HeaderTitle>
+        <HeaderTitle style={styles.title}>{title}</HeaderTitle>
+        {onGoBack ? <View style={styles.phantom} /> : null}
       </View>
     </HeaderSheet>
   );
@@ -30,10 +31,29 @@ export default function HeaderAndroid({ title, onGoBack, style }: Props) {
 
 const styles = StyleSheet.create({
   content: {
-    height: Platform.OS === 'ios' ? 44 : 56,
-    marginTop: Platform.OS === 'ios' ? 20 : StatusBar.currentHeight,
+    ...Platform.select({
+      ios: {
+        height: 44,
+        marginTop: 20,
+      },
+      default: {
+        height: 56,
+        marginTop: StatusBar.currentHeight,
+      },
+    }),
     paddingHorizontal: 4,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  title: {
+    flex: 1,
+    marginHorizontal: 16,
+    textAlign: Platform.select({
+      ios: 'center',
+      default: 'left',
+    }),
+  },
+  phantom: {
+    width: 27,
   },
 });

@@ -48,7 +48,7 @@ export type HeaderInterpolationProps = {
     screen: Layout;
     title?: Layout;
     backTitle?: Layout;
-  },
+  };
 };
 
 export type HeaderInterpolatedStyle = {
@@ -63,6 +63,7 @@ export type HeaderStyleInterpolator = (
 
 export type TransitionPreset = {
   direction: 'horizontal' | 'vertical';
+  headerMode: 'float' | 'screen';
   transitionSpec: {
     open: TransitionSpec;
     close: TransitionSpec;

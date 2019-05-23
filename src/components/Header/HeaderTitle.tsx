@@ -13,7 +13,6 @@ export default function HeaderTitle({ style, ...rest }: Props) {
 const styles = StyleSheet.create({
   title: Platform.select({
     ios: {
-      textAlign: 'center',
       fontSize: 17,
       fontWeight: '600',
       color: 'rgba(0, 0, 0, .9)',

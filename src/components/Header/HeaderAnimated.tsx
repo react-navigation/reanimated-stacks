@@ -57,8 +57,14 @@ export default function HeaderAnimated<T extends Route>({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    height: Platform.OS === 'ios' ? 44 : 56,
-    marginTop: Platform.OS === 'ios' ? 20 : StatusBar.currentHeight,
-  },
+  container: Platform.select({
+    ios: {
+      height: 44,
+      marginTop: 20,
+    },
+    default: {
+      height: 56,
+      marginTop: StatusBar.currentHeight,
+    },
+  }),
 });

@@ -109,10 +109,7 @@ export default class HeaderAnimatedItem<
             />
           </Animated.View>
         ) : null}
-        <HeaderTitle
-          onLayout={this.handleTitleLayout}
-          style={[previous ? styles.title : null, titleStyle]}
-        >
+        <HeaderTitle onLayout={this.handleTitleLayout} style={titleStyle}>
           {scene.title}
         </HeaderTitle>
       </View>
@@ -134,8 +131,5 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     justifyContent: 'center',
-  },
-  title: {
-    marginHorizontal: 48,
   },
 });

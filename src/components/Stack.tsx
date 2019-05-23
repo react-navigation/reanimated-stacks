@@ -3,7 +3,14 @@ import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Animated from 'react-native-reanimated';
 import Card from './Card';
 import HeaderAnimated from './Header/HeaderAnimated';
-import { Route, Layout, TransitionSpec, CardStyleInterpolator, HeaderStyleInterpolator } from '../types';
+import {
+  Route,
+  Layout,
+  TransitionSpec,
+  CardStyleInterpolator,
+  HeaderStyleInterpolator,
+} from '../types';
+import HeaderSimple from './Header/HeaderSimple';
 
 export type SceneProps<T> = {
   route: T;
@@ -21,6 +28,7 @@ type Props<T extends Route> = {
   onGoBack: (props: { route: T }) => void;
   onCloseRoute: (props: { route: T }) => void;
   renderScene: (props: SceneProps<T>) => React.ReactNode;
+  headerMode: 'screen' | 'float';
   direction: 'horizontal' | 'vertical';
   transitionSpec: {
     open: TransitionSpec;
@@ -78,6 +86,7 @@ export default class Stack<T extends Route> extends React.Component<
       onGoBack,
       onCloseRoute,
       renderScene,
+      headerMode,
       direction,
       transitionSpec,
       cardStyleInterpolator,
@@ -87,16 +96,18 @@ export default class Stack<T extends Route> extends React.Component<
 
     return (
       <React.Fragment>
-        <HeaderAnimated
-          layout={layout}
-          scenes={routes.map((route, i) => ({
-            route,
-            progress: progress[route.key],
-            title: i % 2 ? `Screen ${i}` : `Foo ${i}`,
-          }))}
-          onGoBack={onGoBack}
-          styleInterpolator={headerStyleInterpolator}
-        />
+        {headerMode === 'float' ? (
+          <HeaderAnimated
+            layout={layout}
+            scenes={routes.map((route, i) => ({
+              route,
+              progress: progress[route.key],
+              title: i % 2 ? `Screen ${i}` : `Foo ${i}`,
+            }))}
+            onGoBack={onGoBack}
+            styleInterpolator={headerStyleInterpolator}
+          />
+        ) : null}
         <View
           style={styles.container}
           onLayout={this.handleLayout}
@@ -131,6 +142,12 @@ export default class Stack<T extends Route> extends React.Component<
                   transitionSpec={transitionSpec}
                   styleInterpolator={cardStyleInterpolator}
                 >
+                  {headerMode === 'screen' ? (
+                    <HeaderSimple
+                      title={index % 2 ? `Screen ${index}` : `Foo ${index}`}
+                      onGoBack={index !== 0 ? () => onGoBack({ route }) : undefined}
+                    />
+                  ) : null}
                   {renderScene({
                     route,
                     index,

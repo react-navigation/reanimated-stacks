@@ -149,7 +149,7 @@ class HeaderBackButton extends React.Component<Props, State> {
   render() {
     const { onPress, pressColorAndroid, title, disabled } = this.props;
 
-    let button = (
+    return (
       <TouchableItem
         disabled={disabled}
         accessible
@@ -170,12 +170,6 @@ class HeaderBackButton extends React.Component<Props, State> {
         </React.Fragment>
       </TouchableItem>
     );
-
-    if (Platform.OS === 'ios') {
-      return button;
-    } else {
-      return <View style={styles.androidButtonWrapper}>{button}</View>;
-    }
   }
 }
 
@@ -186,13 +180,6 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.5,
-  },
-  androidButtonWrapper: {
-    height: 36,
-    width: 36,
-    margin: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     fontSize: 17,
@@ -208,8 +195,10 @@ const styles = StyleSheet.create({
       transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
     },
     default: {
-      height: 21,
-      width: 21,
+      height: 24,
+      width: 24,
+      marginVertical: 6,
+      marginHorizontal: 14,
       resizeMode: 'contain',
       transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
     },

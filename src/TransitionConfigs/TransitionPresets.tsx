@@ -14,6 +14,7 @@ import { TransitionPreset } from '../types';
 // Standard iOS navigation transition
 export const SlideFromRightIOS: TransitionPreset = {
   direction: 'horizontal',
+  headerMode: 'float',
   transitionSpec: {
     open: TransitionSpecIOS,
     close: TransitionSpecIOS,
@@ -25,6 +26,7 @@ export const SlideFromRightIOS: TransitionPreset = {
 // Standard iOS navigation transition for modals
 export const ModalSlideFromBottomIOS: TransitionPreset = {
   direction: 'vertical',
+  headerMode: 'screen',
   transitionSpec: {
     open: TransitionSpecIOS,
     close: TransitionSpecIOS,
@@ -36,6 +38,7 @@ export const ModalSlideFromBottomIOS: TransitionPreset = {
 // Standard Android navigation transition when opening or closing an Activity
 export const FadeFromBottomAndroid: TransitionPreset = {
   direction: 'vertical',
+  headerMode: 'screen',
   transitionSpec: {
     open: FadeInFromBottomAndroidSpec,
     close: FadeOutToBottomAndroidSpec,
