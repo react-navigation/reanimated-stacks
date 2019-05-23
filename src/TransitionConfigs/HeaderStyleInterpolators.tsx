@@ -8,8 +8,9 @@ export function forUIKit({
   next,
   layouts,
 }: HeaderInterpolationProps): HeaderInterpolatedStyle {
-  const titleOffset =
-    (layouts.screen.width - (layouts.title ? layouts.title.width : 0)) / 2 - 28;
+  const backTitleOffset =
+    (layouts.screen.width - (layouts.backTitle ? layouts.backTitle.width : 0)) / 2 - 27;
+  const titleOffset = (layouts.screen.width - (layouts.title ? layouts.title.width : 0)) / 2 - 27;
 
   const progress = add(current, next ? next : 0);
 
@@ -29,7 +30,7 @@ export function forUIKit({
         {
           translateX: interpolate(progress, {
             inputRange: [0, 1, 2],
-            outputRange: [titleOffset, 0, -titleOffset],
+            outputRange: [backTitleOffset, 0, -backTitleOffset],
           }),
         },
       ],

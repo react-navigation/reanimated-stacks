@@ -47,6 +47,7 @@ export type HeaderInterpolationProps = {
   layouts: {
     screen: Layout;
     title?: Layout;
+    backTitle?: Layout;
   },
 };
 

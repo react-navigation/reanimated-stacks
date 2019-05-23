@@ -92,7 +92,7 @@ export default class Stack<T extends Route> extends React.Component<
           scenes={routes.map((route, i) => ({
             route,
             progress: progress[route.key],
-            title: `Screen ${i}`,
+            title: i % 2 ? `Screen ${i}` : `Foo ${i}`,
           }))}
           onGoBack={onGoBack}
           styleInterpolator={headerStyleInterpolator}

@@ -30,6 +30,7 @@ type Props<T extends Route> = {
 
 type State = {
   titleLayout?: Layout;
+  backTitleLayout?: Layout;
 };
 
 export default class HeaderAnimatedItem<
@@ -43,12 +44,17 @@ export default class HeaderAnimatedItem<
       layout: Layout,
       current: Animated.Node<number>,
       next?: Animated.Node<number>,
-      titleLayout?: Layout
+      titleLayout?: Layout,
+      backTitleLayout?: Layout
     ) =>
       styleInterpolator({
         current,
         next,
-        layouts: { screen: layout, title: titleLayout },
+        layouts: {
+          screen: layout,
+          title: titleLayout,
+          backTitle: backTitleLayout,
+        },
       })
   );
 
@@ -56,6 +62,12 @@ export default class HeaderAnimatedItem<
     const { height, width } = e.nativeEvent.layout;
 
     this.setState({ titleLayout: { height, width } });
+  };
+
+  private handleBackTitleLayout = (e: LayoutChangeEvent) => {
+    const { height, width } = e.nativeEvent.layout;
+
+    this.setState({ backTitleLayout: { height, width } });
   };
 
   render() {
@@ -69,7 +81,7 @@ export default class HeaderAnimatedItem<
       style,
     } = this.props;
 
-    const { titleLayout } = this.state;
+    const { backTitleLayout, titleLayout } = this.state;
 
     const {
       titleStyle,
@@ -80,7 +92,8 @@ export default class HeaderAnimatedItem<
       layout,
       scene.progress,
       next ? next.progress : undefined,
-      titleLayout
+      titleLayout,
+      backTitleLayout
     );
 
     return (
@@ -91,6 +104,7 @@ export default class HeaderAnimatedItem<
               onPress={onGoBack}
               title={previous.title}
               titleStyle={backTitleStyle}
+              onTitleLayout={this.handleBackTitleLayout}
               layout={layout}
             />
           </Animated.View>

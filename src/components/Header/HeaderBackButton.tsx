@@ -23,7 +23,8 @@ type Props = {
   backTitleVisible?: boolean;
   allowFontScaling?: boolean;
   titleStyle?: React.ComponentProps<typeof Animated.Text>['style'];
-  layout: Layout;
+  onTitleLayout?: (e: LayoutChangeEvent) => void;
+  layout?: Layout;
 };
 
 type State = {
@@ -43,10 +44,14 @@ class HeaderBackButton extends React.Component<Props, State> {
 
   state: State = {};
 
-  private handleTextLayout = (e: LayoutChangeEvent) => {
+  private handleTitleLayout = (e: LayoutChangeEvent) => {
     if (this.state.initialTitleWidth) {
       return;
     }
+
+    const { onTitleLayout } = this.props;
+
+    onTitleLayout && onTitleLayout(e);
 
     this.setState({
       initialTitleWidth: e.nativeEvent.layout.x + e.nativeEvent.layout.width,
@@ -84,7 +89,11 @@ class HeaderBackButton extends React.Component<Props, State> {
       return undefined;
     } else if (!title) {
       return truncatedTitle;
-    } else if (initialTitleWidth && initialTitleWidth > layout.width / 3) {
+    } else if (
+      initialTitleWidth &&
+      layout &&
+      initialTitleWidth > layout.width / 3
+    ) {
       return truncatedTitle;
     } else {
       return title;
@@ -98,6 +107,7 @@ class HeaderBackButton extends React.Component<Props, State> {
       backImage,
       titleStyle,
       tintColor,
+      layout,
     } = this.props;
 
     let { initialTitleWidth } = this.state;
@@ -111,12 +121,14 @@ class HeaderBackButton extends React.Component<Props, State> {
     const title = (
       <Animated.Text
         accessible={false}
-        onLayout={this.handleTextLayout}
+        onLayout={this.handleTitleLayout}
         style={[
           styles.title,
           tintColor ? { color: tintColor } : null,
           titleStyle,
-          initialTitleWidth ? { paddingRight: initialTitleWidth } : null,
+          initialTitleWidth && layout
+            ? { paddingRight: layout.width / 2 }
+            : null,
         ]}
         numberOfLines={1}
         allowFontScaling={!!allowFontScaling}
