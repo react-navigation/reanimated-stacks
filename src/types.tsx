@@ -23,8 +23,10 @@ export type TransitionSpec =
   | { timing: 'timing'; config: TimingConfig };
 
 export type CardInterpolationProps = {
-  current: Animated.Node<number>;
-  next?: Animated.Node<number>;
+  positions: {
+    current: Animated.Node<number>;
+    next?: Animated.Node<number>;
+  };
   closing: Animated.Node<0 | 1>;
   layout: {
     width: Animated.Node<number>;
@@ -42,8 +44,10 @@ export type CardStyleInterpolator = (
 ) => CardInterpolatedStyle;
 
 export type HeaderInterpolationProps = {
-  current: Animated.Node<number>;
-  next?: Animated.Node<number>;
+  positions: {
+    current: Animated.Node<number>;
+    next?: Animated.Node<number>;
+  };
   layouts: {
     screen: Layout;
     title?: Layout;

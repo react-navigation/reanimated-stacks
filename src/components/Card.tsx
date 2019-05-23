@@ -5,10 +5,7 @@ import {
   PanGestureHandler,
   State as GestureState,
 } from 'react-native-gesture-handler';
-import {
-  TransitionSpec,
-  CardStyleInterpolator,
-} from '../types';
+import { TransitionSpec, CardStyleInterpolator } from '../types';
 import memoize from '../utils/memoize';
 
 type Props = {
@@ -332,8 +329,10 @@ export default class Card extends React.Component<Props> {
       next: Animated.Node<number> | undefined
     ) =>
       styleInterpolator({
-        current,
-        next,
+        positions: {
+          current,
+          next,
+        },
         closing: this.isClosing,
         layout: this.layout,
       })

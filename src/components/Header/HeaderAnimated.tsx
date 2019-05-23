@@ -7,16 +7,9 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import Animated from 'react-native-reanimated';
 import HeaderSheet from './HeaderSheet';
-import HeaderAnimatedItem from './HeaderAnimatedItem';
+import HeaderAnimatedItem, { Scene } from './HeaderAnimatedItem';
 import { Route, Layout, HeaderStyleInterpolator } from '../../types';
-
-type Scene<T extends Route> = {
-  title: string;
-  route: T;
-  progress: Animated.Node<number>;
-};
 
 type Props<T extends Route> = {
   layout: Layout;

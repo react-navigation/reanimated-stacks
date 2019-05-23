@@ -19,7 +19,7 @@ type Props = {
   backImage?: (props: { tintColor: string; title?: string }) => React.ReactNode;
   tintColor: string;
   title?: string;
-  truncatedTitle?: string;
+  fallbackTitle?: string;
   backTitleVisible?: boolean;
   allowFontScaling?: boolean;
   titleStyle?: React.ComponentProps<typeof Animated.Text>['style'];
@@ -39,7 +39,7 @@ class HeaderBackButton extends React.Component<Props, State> {
       web: '#5f6368',
     }),
     backTitleVisible: Platform.OS === 'ios',
-    truncatedTitle: 'Back',
+    fallbackTitle: 'Back',
   };
 
   state: State = {};
@@ -77,16 +77,14 @@ class HeaderBackButton extends React.Component<Props, State> {
   }
 
   private getTitleText = () => {
-    const { layout, title, truncatedTitle } = this.props;
+    const { layout, title, fallbackTitle } = this.props;
 
     let { titleWidth } = this.state;
 
-    if (title == undefined) {
-      return undefined;
-    } else if (!title) {
-      return truncatedTitle;
+    if (!title) {
+      return fallbackTitle;
     } else if (titleWidth && layout && titleWidth > layout.width / 3) {
-      return truncatedTitle;
+      return fallbackTitle;
     } else {
       return title;
     }

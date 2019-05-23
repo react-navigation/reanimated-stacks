@@ -13,7 +13,7 @@ import memoize from '../../utils/memoize';
 import { Route, Layout, HeaderStyleInterpolator } from '../../types';
 
 export type Scene<T extends Route> = {
-  title: string;
+  title?: string;
   route: T;
   progress: Animated.Node<number>;
 };
@@ -38,26 +38,6 @@ export default class HeaderAnimatedItem<
 > extends React.Component<Props<T>, State> {
   state: State = {};
 
-  private getInterpolatedStyle = memoize(
-    (
-      styleInterpolator: HeaderStyleInterpolator,
-      layout: Layout,
-      current: Animated.Node<number>,
-      next?: Animated.Node<number>,
-      titleLayout?: Layout,
-      backTitleLayout?: Layout
-    ) =>
-      styleInterpolator({
-        current,
-        next,
-        layouts: {
-          screen: layout,
-          title: titleLayout,
-          backTitle: backTitleLayout,
-        },
-      })
-  );
-
   private handleTitleLayout = (e: LayoutChangeEvent) => {
     const { height, width } = e.nativeEvent.layout;
 
@@ -69,6 +49,28 @@ export default class HeaderAnimatedItem<
 
     this.setState({ backTitleLayout: { height, width } });
   };
+
+  private getInterpolatedStyle = memoize(
+    (
+      styleInterpolator: HeaderStyleInterpolator,
+      layout: Layout,
+      current: Animated.Node<number>,
+      next: Animated.Node<number> | undefined,
+      titleLayout: Layout | undefined,
+      backTitleLayout: Layout | undefined
+    ) =>
+      styleInterpolator({
+        positions: {
+          current,
+          next,
+        },
+        layouts: {
+          screen: layout,
+          title: titleLayout,
+          backTitle: backTitleLayout,
+        },
+      })
+  );
 
   render() {
     const {
@@ -93,7 +95,7 @@ export default class HeaderAnimatedItem<
       scene.progress,
       next ? next.progress : undefined,
       titleLayout,
-      backTitleLayout
+      previous && previous.title ? backTitleLayout : undefined
     );
 
     return (
@@ -109,9 +111,11 @@ export default class HeaderAnimatedItem<
             />
           </Animated.View>
         ) : null}
-        <HeaderTitle onLayout={this.handleTitleLayout} style={titleStyle}>
-          {scene.title}
-        </HeaderTitle>
+        {scene.title ? (
+          <HeaderTitle onLayout={this.handleTitleLayout} style={titleStyle}>
+            {scene.title}
+          </HeaderTitle>
+        ) : null}
       </View>
     );
   }

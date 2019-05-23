@@ -7,8 +7,7 @@ const { cond, multiply, interpolate } = Animated;
  * Standard iOS-style slide in from the right.
  */
 export function forHorizontalIOS({
-  current,
-  next,
+  positions: { current, next },
   layout,
 }: CardInterpolationProps): CardInterpolatedStyle {
   const translateFocused = interpolate(current, {
@@ -53,7 +52,7 @@ export function forHorizontalIOS({
  * Standard iOS-style slide in from the bottom (used for modals).
  */
 export function forVerticalIOS({
-  current,
+  positions: { current },
   layout,
 }: CardInterpolationProps): CardInterpolatedStyle {
   const translateY = interpolate(current, {
@@ -76,7 +75,7 @@ export function forVerticalIOS({
  * Standard Android-style fade in from the bottom.
  */
 export function forFadeFromBottomAndroid({
-  current,
+  positions: { current },
   layout,
   closing,
 }: CardInterpolationProps): CardInterpolatedStyle {

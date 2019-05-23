@@ -12,7 +12,7 @@ import HeaderTitle from './HeaderTitle';
 import HeaderBackButton from './HeaderBackButton';
 
 type Props = {
-  title: string;
+  title?: string;
   onGoBack?: () => void;
   style?: StyleProp<ViewStyle>;
 };
@@ -22,7 +22,7 @@ export default function HeaderSimple({ title, onGoBack, style }: Props) {
     <HeaderSheet style={style}>
       <View style={styles.content}>
         {onGoBack ? <HeaderBackButton onPress={onGoBack} /> : null}
-        <HeaderTitle style={styles.title}>{title}</HeaderTitle>
+        {title ? <HeaderTitle style={styles.title}>{title}</HeaderTitle> : null}
         {onGoBack ? <View style={styles.phantom} /> : null}
       </View>
     </HeaderSheet>
