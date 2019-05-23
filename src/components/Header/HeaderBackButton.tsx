@@ -28,7 +28,7 @@ type Props = {
 };
 
 type State = {
-  initialTitleWidth?: number;
+  titleWidth?: number;
 };
 
 class HeaderBackButton extends React.Component<Props, State> {
@@ -45,16 +45,12 @@ class HeaderBackButton extends React.Component<Props, State> {
   state: State = {};
 
   private handleTitleLayout = (e: LayoutChangeEvent) => {
-    if (this.state.initialTitleWidth) {
-      return;
-    }
-
     const { onTitleLayout } = this.props;
 
     onTitleLayout && onTitleLayout(e);
 
     this.setState({
-      initialTitleWidth: e.nativeEvent.layout.x + e.nativeEvent.layout.width,
+      titleWidth: e.nativeEvent.layout.x + e.nativeEvent.layout.width,
     });
   };
 
@@ -83,17 +79,13 @@ class HeaderBackButton extends React.Component<Props, State> {
   private getTitleText = () => {
     const { layout, title, truncatedTitle } = this.props;
 
-    let { initialTitleWidth } = this.state;
+    let { titleWidth } = this.state;
 
     if (title == undefined) {
       return undefined;
     } else if (!title) {
       return truncatedTitle;
-    } else if (
-      initialTitleWidth &&
-      layout &&
-      initialTitleWidth > layout.width / 3
-    ) {
+    } else if (titleWidth && layout && titleWidth > layout.width / 3) {
       return truncatedTitle;
     } else {
       return title;
@@ -110,8 +102,6 @@ class HeaderBackButton extends React.Component<Props, State> {
       layout,
     } = this.props;
 
-    let { initialTitleWidth } = this.state;
-
     let backTitleText = this.getTitleText();
 
     if (!backTitleVisible || backTitleText === undefined) {
@@ -124,11 +114,9 @@ class HeaderBackButton extends React.Component<Props, State> {
         onLayout={this.handleTitleLayout}
         style={[
           styles.title,
+          layout ? { marginRight: layout.width / 2 } : null,
           tintColor ? { color: tintColor } : null,
           titleStyle,
-          initialTitleWidth && layout
-            ? { paddingRight: layout.width / 2 }
-            : null,
         ]}
         numberOfLines={1}
         allowFontScaling={!!allowFontScaling}
@@ -208,13 +196,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    letterSpacing: 0.35,
   },
   icon: Platform.select({
     ios: {
       height: 21,
       width: 13,
-      marginLeft: 9,
+      marginLeft: 8,
       marginRight: 22,
       marginVertical: 12,
       resizeMode: 'contain',
