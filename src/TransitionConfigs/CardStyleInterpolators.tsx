@@ -117,11 +117,11 @@ export function forWipeFromBottomAndroid({
   const cardTranslateYUnfocused = next
     ? interpolate(next, {
         inputRange: [0, 1],
-        outputRange: [0, multiply(layout.height, 4.1 / 100, -1)],
+        outputRange: [0, multiply(layout.height, 2 / 100, -1)],
       })
     : 0;
   const overlayOpacity = interpolate(current, {
-    inputRange: [0, 0.4, 1],
+    inputRange: [0, 0.36, 1],
     outputRange: [0, 0.1, 0.1],
   });
 
