@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, Button, StyleSheet, Platform } from 'react-native';
+import { View, Text, Button, StyleSheet } from 'react-native';
 import Stack, { SceneProps } from './components/Stack';
 import { Route } from './types';
 import { DefaultTransition } from './TransitionConfigs/TransitionPresets';

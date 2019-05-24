@@ -1,7 +1,7 @@
 import { Easing } from 'react-native-reanimated';
 import { TransitionSpec } from '../types';
 
-export const TransitionSpecIOS: TransitionSpec = {
+export const TransitionIOSSpec: TransitionSpec = {
   timing: 'spring',
   config: {
     stiffness: 1000,
@@ -32,19 +32,12 @@ export const FadeOutToBottomAndroidSpec: TransitionSpec = {
 };
 
 // See http://androidxref.com/9.0.0_r3/xref/frameworks/base/core/res/res/anim/activity_open_enter.xml
-export const WipeInFromBottomAndroidSpec: TransitionSpec = {
+export const WipeFromBottomAndroidSpec: TransitionSpec = {
   timing: 'timing',
   config: {
     duration: 425,
-    easing: Easing.bezier(0.4, 0, 0.2, 1),
-  },
-};
-
-// See http://androidxref.com/9.0.0_r3/xref/frameworks/base/core/res/res/anim/activity_close_exit.xml
-export const WipeOutToBottomAndroidSpec: TransitionSpec = {
-  timing: 'timing',
-  config: {
-    duration: 425,
-    easing: Easing.bezier(0.4, 0, 0.2, 1),
+    // This is super rough approximation of the path used for the curve by android
+    // See http://androidxref.com/9.0.0_r3/xref/frameworks/base/core/res/res/interpolator/fast_out_extra_slow_in.xml
+    easing: Easing.bezier(0.35, 0.45, 0, 1),
   },
 };

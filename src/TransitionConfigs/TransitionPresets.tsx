@@ -6,9 +6,8 @@ import {
 } from './CardStyleInterpolators';
 import { forUIKit, forNoAnimation } from './HeaderStyleInterpolators';
 import {
-  TransitionSpecIOS,
-  WipeInFromBottomAndroidSpec,
-  WipeOutToBottomAndroidSpec,
+  TransitionIOSSpec,
+  WipeFromBottomAndroidSpec,
   FadeOutToBottomAndroidSpec,
   FadeInFromBottomAndroidSpec,
 } from './TransitionSpecs';
@@ -22,8 +21,8 @@ export const SlideFromRightIOS: TransitionPreset = {
   direction: 'horizontal',
   headerMode: 'float',
   transitionSpec: {
-    open: TransitionSpecIOS,
-    close: TransitionSpecIOS,
+    open: TransitionIOSSpec,
+    close: TransitionIOSSpec,
   },
   cardStyleInterpolator: forHorizontalIOS,
   headerStyleInterpolator: forUIKit,
@@ -34,8 +33,8 @@ export const ModalSlideFromBottomIOS: TransitionPreset = {
   direction: 'vertical',
   headerMode: 'screen',
   transitionSpec: {
-    open: TransitionSpecIOS,
-    close: TransitionSpecIOS,
+    open: TransitionIOSSpec,
+    close: TransitionIOSSpec,
   },
   cardStyleInterpolator: forVerticalIOS,
   headerStyleInterpolator: forNoAnimation,
@@ -58,8 +57,8 @@ export const WipeFromBottomAndroid: TransitionPreset = {
   direction: 'vertical',
   headerMode: 'screen',
   transitionSpec: {
-    open: WipeInFromBottomAndroidSpec,
-    close: WipeOutToBottomAndroidSpec,
+    open: WipeFromBottomAndroidSpec,
+    close: WipeFromBottomAndroidSpec,
   },
   cardStyleInterpolator: forWipeFromBottomAndroid,
   headerStyleInterpolator: forNoAnimation,

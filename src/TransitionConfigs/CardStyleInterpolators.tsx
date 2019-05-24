@@ -1,7 +1,7 @@
 import Animated from 'react-native-reanimated';
 import { CardInterpolationProps, CardInterpolatedStyle } from '../types';
 
-const { cond, multiply, sub, interpolate } = Animated;
+const { cond, multiply, interpolate } = Animated;
 
 /**
  * Standard iOS-style slide in from the right.
