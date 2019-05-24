@@ -160,6 +160,10 @@ class HeaderBackButton extends React.Component<Props, State> {
         onPress={disabled ? undefined : onPress}
         pressColor={pressColorAndroid}
         style={[styles.container, disabled && styles.disabled]}
+        hitSlop={Platform.select({
+          ios: undefined,
+          default: { top: 8, right: 8, bottom: 8, left: 8 },
+        })}
         borderless
       >
         <React.Fragment>
@@ -175,6 +179,13 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flexDirection: 'row',
+    ...Platform.select({
+      ios: null,
+      default: {
+        marginVertical: 3,
+        marginHorizontal: 11,
+      },
+    }),
   },
   disabled: {
     opacity: 0.5,
@@ -195,8 +206,7 @@ const styles = StyleSheet.create({
     default: {
       height: 24,
       width: 24,
-      marginVertical: 6,
-      marginHorizontal: 14,
+      margin: 3,
       resizeMode: 'contain',
       transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
     },
