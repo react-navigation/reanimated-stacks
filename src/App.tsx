@@ -2,10 +2,7 @@ import * as React from 'react';
 import { View, Text, Button, StyleSheet, Platform } from 'react-native';
 import Stack, { SceneProps } from './components/Stack';
 import { Route } from './types';
-import {
-  SlideFromRightIOS,
-  FadeFromBottomAndroid,
-} from './TransitionConfigs/TransitionPresets';
+import { DefaultTransition } from './TransitionConfigs/TransitionPresets';
 
 type State = {
   routes: Route[];
@@ -71,10 +68,7 @@ export default class App extends React.Component<{}, State> {
           }))
         }
         renderScene={this.renderScene}
-        {...Platform.select({
-          ios: SlideFromRightIOS,
-          default: FadeFromBottomAndroid,
-        })}
+        {...DefaultTransition}
       />
     );
   }

@@ -35,6 +35,7 @@ export type CardInterpolationProps = {
 };
 
 export type CardInterpolatedStyle = {
+  containerStyle?: any;
   cardStyle?: any;
   overlayStyle?: any;
 };

@@ -89,3 +89,7 @@ export function forFade({
     titleStyle: { opacity },
   };
 }
+
+export function forNoAnimation(): HeaderInterpolatedStyle {
+  return {};
+}

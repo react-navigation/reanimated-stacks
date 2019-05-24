@@ -30,3 +30,21 @@ export const FadeOutToBottomAndroidSpec: TransitionSpec = {
     easing: Easing.in(Easing.linear),
   },
 };
+
+// See http://androidxref.com/9.0.0_r3/xref/frameworks/base/core/res/res/anim/activity_open_enter.xml
+export const WipeInFromBottomAndroidSpec: TransitionSpec = {
+  timing: 'timing',
+  config: {
+    duration: 425,
+    easing: Easing.bezier(0.4, 0, 0.2, 1),
+  },
+};
+
+// See http://androidxref.com/9.0.0_r3/xref/frameworks/base/core/res/res/anim/activity_close_exit.xml
+export const WipeOutToBottomAndroidSpec: TransitionSpec = {
+  timing: 'timing',
+  config: {
+    duration: 425,
+    easing: Easing.bezier(0.4, 0, 0.2, 1),
+  },
+};

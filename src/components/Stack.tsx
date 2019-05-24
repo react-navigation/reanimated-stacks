@@ -121,8 +121,18 @@ export default class Stack<T extends Route> extends React.Component<
               : undefined;
 
             return (
-              <View
+              <Card
                 key={route.key}
+                direction={direction}
+                layout={layout}
+                current={current}
+                next={next}
+                closing={closingRoutes.includes(route.key)}
+                onClose={() => onCloseRoute({ route })}
+                animateIn={!initialRoutes.includes(route.key)}
+                gesturesEnabled={index !== 0}
+                transitionSpec={transitionSpec}
+                styleInterpolator={cardStyleInterpolator}
                 accessibilityElementsHidden={!focused}
                 importantForAccessibility={
                   focused ? 'auto' : 'no-hide-descendants'
@@ -130,30 +140,19 @@ export default class Stack<T extends Route> extends React.Component<
                 pointerEvents="box-none"
                 style={StyleSheet.absoluteFill}
               >
-                <Card
-                  direction={direction}
-                  layout={layout}
-                  current={current}
-                  next={next}
-                  closing={closingRoutes.includes(route.key)}
-                  onClose={() => onCloseRoute({ route })}
-                  animateIn={!initialRoutes.includes(route.key)}
-                  gesturesEnabled={index !== 0}
-                  transitionSpec={transitionSpec}
-                  styleInterpolator={cardStyleInterpolator}
-                >
-                  {headerMode === 'screen' ? (
-                    <HeaderSimple
-                      title={index % 2 ? `Screen ${index}` : `Foo ${index}`}
-                      onGoBack={index !== 0 ? () => onGoBack({ route }) : undefined}
-                    />
-                  ) : null}
-                  {renderScene({
-                    route,
-                    index,
-                  })}
-                </Card>
-              </View>
+                {headerMode === 'screen' ? (
+                  <HeaderSimple
+                    title={index % 2 ? `Screen ${index}` : `Foo ${index}`}
+                    onGoBack={
+                      index !== 0 ? () => onGoBack({ route }) : undefined
+                    }
+                  />
+                ) : null}
+                {renderScene({
+                  route,
+                  index,
+                })}
+              </Card>
             );
           })}
         </View>

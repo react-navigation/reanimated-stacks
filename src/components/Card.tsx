@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ViewProps } from 'react-native';
 import Animated from 'react-native-reanimated';
 import {
   PanGestureHandler,
@@ -8,7 +8,7 @@ import {
 import { TransitionSpec, CardStyleInterpolator } from '../types';
 import memoize from '../utils/memoize';
 
-type Props = {
+type Props = ViewProps & {
   closing?: boolean;
   next?: Animated.Node<number>;
   current: Animated.Value<number>;
@@ -347,13 +347,14 @@ export default class Card extends React.Component<Props> {
       gesturesEnabled,
       children,
       styleInterpolator,
+      ...rest
     } = this.props;
 
-    const { cardStyle, overlayStyle } = this.getInterpolatedStyle(
-      styleInterpolator,
-      current,
-      next
-    );
+    const {
+      containerStyle,
+      cardStyle,
+      overlayStyle,
+    } = this.getInterpolatedStyle(styleInterpolator, current, next);
 
     const handleGestureEvent =
       direction === 'vertical'
@@ -361,7 +362,7 @@ export default class Card extends React.Component<Props> {
         : this.handleGestureEventHorizontal;
 
     return (
-      <View style={styles.container} pointerEvents="box-none">
+      <View pointerEvents="box-none" {...rest}>
         <Animated.Code exec={this.translate} />
         {overlayStyle ? (
           <Animated.View
@@ -369,15 +370,20 @@ export default class Card extends React.Component<Props> {
             style={[styles.overlay, overlayStyle]}
           />
         ) : null}
-        <PanGestureHandler
-          enabled={layout.width !== 0 && gesturesEnabled}
-          onGestureEvent={handleGestureEvent}
-          onHandlerStateChange={handleGestureEvent}
+        <Animated.View
+          style={[styles.container, containerStyle]}
+          pointerEvents="box-none"
         >
-          <Animated.View style={[styles.card, cardStyle]}>
-            {children}
-          </Animated.View>
-        </PanGestureHandler>
+          <PanGestureHandler
+            enabled={layout.width !== 0 && gesturesEnabled}
+            onGestureEvent={handleGestureEvent}
+            onHandlerStateChange={handleGestureEvent}
+          >
+            <Animated.View style={[styles.card, cardStyle]}>
+              {children}
+            </Animated.View>
+          </PanGestureHandler>
+        </Animated.View>
       </View>
     );
   }
@@ -386,6 +392,7 @@ export default class Card extends React.Component<Props> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    overflow: 'hidden',
   },
   card: {
     ...StyleSheet.absoluteFillObject,

@@ -1,7 +1,7 @@
 import Animated from 'react-native-reanimated';
 import { CardInterpolationProps, CardInterpolatedStyle } from '../types';
 
-const { cond, multiply, interpolate } = Animated;
+const { cond, multiply, sub, interpolate } = Animated;
 
 /**
  * Standard iOS-style slide in from the right.
@@ -42,9 +42,7 @@ export function forHorizontalIOS({
       ],
       shadowOpacity,
     },
-    overlayStyle: {
-      opacity,
-    },
+    overlayStyle: { opacity },
   };
 }
 
@@ -72,7 +70,7 @@ export function forVerticalIOS({
 }
 
 /**
- * Standard Android-style fade in from the bottom.
+ * Standard Android-style fade in from the bottom for Android Oreo.
  */
 export function forFadeFromBottomAndroid({
   positions: { current },
@@ -98,5 +96,45 @@ export function forFadeFromBottomAndroid({
       opacity,
       transform: [{ translateY }],
     },
+  };
+}
+
+/**
+ * Standard Android-style wipe from the bottom for Android Pie.
+ */
+export function forWipeFromBottomAndroid({
+  positions: { current, next },
+  layout,
+}: CardInterpolationProps): CardInterpolatedStyle {
+  const containerTranslateY = interpolate(current, {
+    inputRange: [0, 1],
+    outputRange: [layout.height, 0],
+  });
+  const cardTranslateYFocused = interpolate(current, {
+    inputRange: [0, 1],
+    outputRange: [multiply(layout.height, 95.9 / 100, -1), 0],
+  });
+  const cardTranslateYUnfocused = next
+    ? interpolate(next, {
+        inputRange: [0, 1],
+        outputRange: [0, multiply(layout.height, 4.1 / 100, -1)],
+      })
+    : 0;
+  const overlayOpacity = interpolate(current, {
+    inputRange: [0, 0.4, 1],
+    outputRange: [0, 0.1, 0.1],
+  });
+
+  return {
+    containerStyle: {
+      transform: [{ translateY: containerTranslateY }],
+    },
+    cardStyle: {
+      transform: [
+        { translateY: cardTranslateYFocused },
+        { translateY: cardTranslateYUnfocused },
+      ],
+    },
+    overlayStyle: { opacity: overlayOpacity },
   };
 }
