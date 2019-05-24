@@ -28,7 +28,7 @@ type Props = {
 };
 
 type State = {
-  titleWidth?: number;
+  initialTitleWidth?: number;
 };
 
 class HeaderBackButton extends React.Component<Props, State> {
@@ -49,8 +49,12 @@ class HeaderBackButton extends React.Component<Props, State> {
 
     onTitleLayout && onTitleLayout(e);
 
+    if (this.state.initialTitleWidth) {
+      return;
+    }
+
     this.setState({
-      titleWidth: e.nativeEvent.layout.x + e.nativeEvent.layout.width,
+      initialTitleWidth: e.nativeEvent.layout.x + e.nativeEvent.layout.width,
     });
   };
 
@@ -79,11 +83,15 @@ class HeaderBackButton extends React.Component<Props, State> {
   private getTitleText = () => {
     const { layout, title, fallbackTitle } = this.props;
 
-    let { titleWidth } = this.state;
+    let { initialTitleWidth } = this.state;
 
     if (!title) {
       return fallbackTitle;
-    } else if (titleWidth && layout && titleWidth > layout.width / 3) {
+    } else if (
+      initialTitleWidth &&
+      layout &&
+      initialTitleWidth > layout.width / 4
+    ) {
       return fallbackTitle;
     } else {
       return title;
