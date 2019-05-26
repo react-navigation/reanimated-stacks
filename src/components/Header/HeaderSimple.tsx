@@ -1,59 +1,33 @@
 import * as React from 'react';
-import {
-  View,
-  StyleSheet,
-  Platform,
-  StatusBar,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
-import HeaderSheet from './HeaderSheet';
-import HeaderTitle from './HeaderTitle';
-import HeaderBackButton from './HeaderBackButton';
+import { StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import HeaderBar from './HeaderBar';
+import { Route, Scene, HeaderStyleInterpolator, Layout } from '../../types';
+import HeaderSegment from './HeaderSegment';
 
-type Props = {
-  title?: string;
+type Props<T extends Route> = {
+  layout: Layout;
   onGoBack?: () => void;
+  scene: Scene<T>;
+  previous?: Scene<T>;
+  next?: Scene<T>;
+  styleInterpolator: HeaderStyleInterpolator;
   style?: StyleProp<ViewStyle>;
 };
 
-export default function HeaderSimple({ title, onGoBack, style }: Props) {
+export default function HeaderSimple<T extends Route>({
+  layout,
+  style,
+  ...rest
+}: Props<T>) {
   return (
-    <HeaderSheet style={style}>
-      <View style={styles.content}>
-        {onGoBack ? <HeaderBackButton onPress={onGoBack} /> : null}
-        {title ? <HeaderTitle style={styles.title}>{title}</HeaderTitle> : null}
-        {onGoBack ? <View style={styles.phantom} /> : null}
-      </View>
-    </HeaderSheet>
+    <HeaderBar layout={layout} style={style}>
+      <HeaderSegment {...rest} layout={layout} style={styles.container} />
+    </HeaderBar>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
-    ...Platform.select({
-      ios: {
-        height: 44,
-        marginTop: 20,
-      },
-      default: {
-        height: 56,
-        marginTop: StatusBar.currentHeight,
-      },
-    }),
-    paddingHorizontal: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  title: {
+  container: {
     flex: 1,
-    marginHorizontal: 16,
-    textAlign: Platform.select({
-      ios: 'center',
-      default: 'left',
-    }),
-  },
-  phantom: {
-    width: 27,
   },
 });

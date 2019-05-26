@@ -1,15 +1,8 @@
 import * as React from 'react';
-import {
-  View,
-  StyleSheet,
-  Platform,
-  StatusBar,
-  StyleProp,
-  ViewStyle,
-} from 'react-native';
-import HeaderSheet from './HeaderSheet';
-import HeaderAnimatedItem, { Scene } from './HeaderAnimatedItem';
-import { Route, Layout, HeaderStyleInterpolator } from '../../types';
+import { StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import HeaderBar from './HeaderBar';
+import HeaderSegment from './HeaderSegment';
+import { Route, Scene, Layout, HeaderStyleInterpolator } from '../../types';
 
 type Props<T extends Route> = {
   layout: Layout;
@@ -26,38 +19,26 @@ export default function HeaderAnimated<T extends Route>({
   styleInterpolator,
 }: Props<T>) {
   return (
-    <HeaderSheet>
-      <View style={styles.container}>
-        {scenes.map((scene, i, self) => {
-          const previous = self[i - 1];
-          const next = self[i + 1];
+    <HeaderBar layout={layout}>
+      {scenes.map((scene, i, self) => {
+        const previous = self[i - 1];
+        const next = self[i + 1];
 
-          return (
-            <HeaderAnimatedItem
-              key={scene.route.key}
-              layout={layout}
-              scene={scene}
-              previous={previous}
-              next={next}
-              onGoBack={() => onGoBack({ route: scene.route })}
-              styleInterpolator={styleInterpolator}
-            />
-          );
-        })}
-      </View>
-    </HeaderSheet>
+        return (
+          <HeaderSegment
+            key={scene.route.key}
+            layout={layout}
+            scene={scene}
+            previous={previous}
+            next={next}
+            onGoBack={
+              previous ? () => onGoBack({ route: scene.route }) : undefined
+            }
+            styleInterpolator={styleInterpolator}
+            style={StyleSheet.absoluteFill}
+          />
+        );
+      })}
+    </HeaderBar>
   );
 }
-
-const styles = StyleSheet.create({
-  container: Platform.select({
-    ios: {
-      height: 44,
-      marginTop: 20,
-    },
-    default: {
-      height: 56,
-      marginTop: StatusBar.currentHeight,
-    },
-  }),
-});

@@ -5,22 +5,17 @@ import {
   StyleProp,
   ViewStyle,
   LayoutChangeEvent,
+  Platform,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import HeaderTitle from './HeaderTitle';
 import HeaderBackButton from './HeaderBackButton';
 import memoize from '../../utils/memoize';
-import { Route, Layout, HeaderStyleInterpolator } from '../../types';
-
-export type Scene<T extends Route> = {
-  title?: string;
-  route: T;
-  progress: Animated.Node<number>;
-};
+import { Route, Scene, Layout, HeaderStyleInterpolator } from '../../types';
 
 type Props<T extends Route> = {
   layout: Layout;
-  onGoBack: () => void;
+  onGoBack?: () => void;
   scene: Scene<T>;
   previous?: Scene<T>;
   next?: Scene<T>;
@@ -33,9 +28,10 @@ type State = {
   backTitleLayout?: Layout;
 };
 
-export default class HeaderAnimatedItem<
-  T extends Route
-> extends React.Component<Props<T>, State> {
+export default class HeaderSegment<T extends Route> extends React.Component<
+  Props<T>,
+  State
+> {
   state: State = {};
 
   private handleTitleLayout = (e: LayoutChangeEvent) => {
@@ -99,12 +95,12 @@ export default class HeaderAnimatedItem<
     );
 
     return (
-      <View style={[styles.content, style]}>
-        {previous ? (
+      <View style={[styles.container, style]}>
+        {onGoBack ? (
           <Animated.View style={[styles.left, leftButtonStyle]}>
             <HeaderBackButton
               onPress={onGoBack}
-              title={previous.title}
+              title={previous ? previous.title : undefined}
               titleStyle={backTitleStyle}
               onTitleLayout={this.handleBackTitleLayout}
               layout={layout}
@@ -112,7 +108,17 @@ export default class HeaderAnimatedItem<
           </Animated.View>
         ) : null}
         {scene.title ? (
-          <HeaderTitle onLayout={this.handleTitleLayout} style={titleStyle}>
+          <HeaderTitle
+            onLayout={this.handleTitleLayout}
+            style={[
+              styles.title,
+              Platform.select({
+                ios: null,
+                default: { left: onGoBack ? 72 : 16 },
+              }),
+              titleStyle,
+            ]}
+          >
             {scene.title}
           </HeaderTitle>
         ) : null}
@@ -122,8 +128,7 @@ export default class HeaderAnimatedItem<
 }
 
 const styles = StyleSheet.create({
-  content: {
-    ...StyleSheet.absoluteFillObject,
+  container: {
     paddingHorizontal: 4,
     flexDirection: 'row',
     alignItems: 'center',
@@ -136,4 +141,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
   },
+  title: Platform.select({
+    ios: {},
+    default: { position: 'absolute' },
+  }),
 });

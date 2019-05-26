@@ -142,10 +142,16 @@ export default class Stack<T extends Route> extends React.Component<
               >
                 {headerMode === 'screen' ? (
                   <HeaderSimple
-                    title={index % 2 ? `Screen ${index}` : `Foo ${index}`}
+                    scene={{
+                      route,
+                      title: index % 2 ? `Screen ${index}` : `Foo ${index}`,
+                      progress: current
+                    }}
                     onGoBack={
                       index !== 0 ? () => onGoBack({ route }) : undefined
                     }
+                    layout={layout}
+                    styleInterpolator={headerStyleInterpolator}
                   />
                 ) : null}
                 {renderScene({

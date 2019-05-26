@@ -2,6 +2,12 @@ import Animated from 'react-native-reanimated';
 
 export type Route = { key: string };
 
+export type Scene<T extends Route> = {
+  title?: string;
+  route: T;
+  progress: Animated.Node<number>;
+};
+
 export type Layout = { width: number; height: number };
 
 export type SpringConfig = {
